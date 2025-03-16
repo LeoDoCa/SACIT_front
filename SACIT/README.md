@@ -7,3 +7,5 @@ npm install tailwindcss @tailwindcss/vite
 
 Para correr el archivo es 
 npm run dev
+
+Esto es solo para una prueba
