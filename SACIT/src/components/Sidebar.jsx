@@ -134,6 +134,51 @@ const Sidebar = () => {
                             </div>
                         </div>
                     </div>
+
+                    <div className="accordion-item" style={{ backgroundColor: '#003366' }}>
+                        <h2 className="accordion-header">
+                            <button
+                                className="accordion-button collapsed text-white"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#usuariosMenu"
+                                aria-expanded="false"
+                                aria-controls="usuariosMenu"
+                                style={{
+                                    backgroundColor: '#003366',
+                                    border: 'none',
+                                }}
+                            >
+                                Usuarios
+                            </button>
+                        </h2>
+                        <div
+                            id="usuariosMenu"
+                            className="accordion-collapse collapse"
+                            data-bs-parent="#menuAccordion"
+                        >
+                            <div className="accordion-body p-0">
+                                <ul className="list-unstyled ms-3">
+                                    <li>
+                                        <a
+                                            href="#ver-usuarios"
+                                            className="text-white text-decoration-none"
+                                        >
+                                            Ver Usuarios
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a
+                                            href="#crear-administradores"
+                                            className="text-white text-decoration-none"
+                                        >
+                                            Crear Administradores
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
