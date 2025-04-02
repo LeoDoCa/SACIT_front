@@ -13,7 +13,6 @@ const Home = () => {
     }));
   };
 
-  //Datos estaticos en lo que esta el servicio
   const userCards = [
     {
       id: 1,

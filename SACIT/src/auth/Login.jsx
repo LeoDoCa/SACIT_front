@@ -15,8 +15,6 @@ const Login = () => {
     if (Object.keys(validationErrors).length === 0) {
       console.log("Correo:", email);
       console.log("Contraseña:", password);
-      
-      // logica de login
         
       navigate('/');
     }

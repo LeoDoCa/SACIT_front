@@ -11,7 +11,7 @@ const ResetPassword = () => {
     const validationErrors = validateEmail(email);
     if (Object.keys(validationErrors).length === 0) {
       console.log("Correo enviado para restablecer la contraseña a:", email);
-      // Logica para restablecimiento
+
     }
   };
 
