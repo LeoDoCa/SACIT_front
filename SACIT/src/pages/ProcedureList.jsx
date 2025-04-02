@@ -4,7 +4,6 @@ import { Container, Row, Col, Table, Button } from 'react-bootstrap';
 import Sidebar from '../components/Siderbar';
 
 const ListaTramites = () => {
-    // Estado para los trámites
     const [tramites, setTramites] = useState([
         { id: 1, nombre: 'Tramite', costo: '$ 0.00'},
         { id: 2, nombre: 'Tramite', costo: '$ 0.00'},
@@ -16,18 +15,14 @@ const ListaTramites = () => {
         { id: 8, nombre: 'Tramite', costo: '$ 0.00'},
     ]);
 
-    // Función para eliminar un trámite
     const handleEliminar = (id) => {
         setTramites(tramites.filter(tramite => tramite.id !== id));
     };
 
-    // Función para editar un trámite (solo marca la acción, implementación completa requeriría más código)
     const handleEditar = (id) => {
         console.log("Editar trámite con ID:", id);
-        // Aquí iría la lógica para abrir formulario de edición o redireccionar
     };
 
-    // Función para seleccionar un trámite
     const handleSeleccionar = (id) => {
         setTramites(tramites.map(tramite =>
             tramite.id === id
@@ -38,12 +33,10 @@ const ListaTramites = () => {
 
     return (
         <Container fluid className="p-0 d-flex" style={{ minHeight: '100vh' }}>
-            {/* Importar el Sidebar */}
             <div style={{ width: '200px', backgroundColor: '#003366', color: 'white', position: 'sticky', top: 0, height: '100vh' }}>
                 <Sidebar />
             </div>
 
-            {/* Contenido principal */}
             <div className="flex-grow-1 p-4" style={{ backgroundColor: '#f8f9fa' }}>
                 <h2 className="mb-4">Tramites</h2>
 

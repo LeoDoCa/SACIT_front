@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import { Plus, X } from 'react-bootstrap-icons';
-import Sidebar from '../components/Sidebar.jsx'; // Importa el componente Sidebar
+import Sidebar from '../components/Sidebar.jsx'; 
 
 const AddProcedure = () => {
     const [formData, setFormData] = useState({
         nombre: '',
         descripcion: '',
         costo: '',
-        fechas: [''], // Solo un input inicial
-        documentos: [''] // Solo un input inicial
+        fechas: [''], 
+        documentos: [''] 
     });
 
     const handleChange = (e, field, index) => {
@@ -25,7 +25,7 @@ const AddProcedure = () => {
 
     const handleRemoveField = (field, index) => {
         const newArray = [...formData[field]];
-        newArray.splice(index, 1); // Elimina el elemento en el índice especificado
+        newArray.splice(index, 1); 
         setFormData({ ...formData, [field]: newArray });
     };
 
@@ -36,12 +36,10 @@ const AddProcedure = () => {
 
     return (
         <Container fluid className="p-0 d-flex" style={{ minHeight: '100vh' }}>
-            {/* Sidebar fija */}
             <div style={{ width: '200px', backgroundColor: '#003366', color: 'white', position: 'sticky', top: 0, height: '100vh' }}>
                 <Sidebar />
             </div>
 
-            {/* Contenido desplazable */}
             <div className="flex-grow-1 p-4" style={{ overflowY: 'auto', maxHeight: '100vh' }}>
                 <h2 className="mb-4">Agregar trámite</h2>
 
@@ -74,10 +72,9 @@ const AddProcedure = () => {
                                     </Button>
                                 </div>
 
-                                {/* Contenedor con altura fija para Datos */}
                                 <div
                                     style={{
-                                        maxHeight: '200px', // Altura para mostrar hasta 4 inputs
+                                        maxHeight: '200px', 
                                         overflowY: 'auto',
                                         border: '1px solid #ced4da',
                                         borderRadius: '5px',
@@ -153,10 +150,9 @@ const AddProcedure = () => {
                                 </Button>
                             </div>
 
-                            {/* Contenedor con altura fija para Documentos */}
                             <div
                                 style={{
-                                    maxHeight: '200px', // Altura para mostrar hasta 4 inputs
+                                    maxHeight: '200px', 
                                     overflowY: 'auto',
                                     border: '1px solid #ced4da',
                                     borderRadius: '5px',

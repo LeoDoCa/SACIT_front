@@ -7,9 +7,7 @@ const Sidebar = () => {
             <div className="p-3">
                 <h4 className="mb-4 text-white">Menú</h4>
 
-                {/* Acordeón */}
                 <div className="accordion accordion-flush" id="menuAccordion">
-                    {/* Trámites */}
                     <div className="accordion-item" style={{ backgroundColor: '#003366' }}>
                         <h2 className="accordion-header">
                             <button
@@ -55,7 +53,6 @@ const Sidebar = () => {
                         </div>
                     </div>
 
-                    {/* Ventanillas */}
                     <div className="accordion-item" style={{ backgroundColor: '#003366' }}>
                         <h2 className="accordion-header">
                             <button
@@ -101,7 +98,6 @@ const Sidebar = () => {
                         </div>
                     </div>
 
-                    {/* Citas */}
                     <div className="accordion-item" style={{ backgroundColor: '#003366' }}>
                         <h2 className="accordion-header">
                             <button
@@ -141,7 +137,6 @@ const Sidebar = () => {
                 </div>
             </div>
 
-            {/* Botón de Cerrar Sesión */}
             <div className="mt-auto" style={{ position: 'absolute', bottom: 0, width: '200px' }}>
                 <Button
                     variant="success"
