@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Button } from 'react-bootstrap';
+import { Card, Button, Nav } from 'react-bootstrap';
 import { FaFileAlt, FaChevronDown, FaChevronUp, FaCheck } from 'react-icons/fa';
 import PropTypes from 'prop-types';
 
@@ -50,9 +50,12 @@ function UserCard({ title, subtitle, price, requirements, showRequirements, togg
             </div>
           )}
 
-          <Button variant="primary" className="w-100 rounded-pill">
-            Agendar
-          </Button>
+          <Nav.Link href="/schedule" className="btn btn-primary w-100 rounded-pill text-center">
+            <Button variant="primary" className="w-100 rounded-pill">
+              Agendar
+            </Button>
+          </Nav.Link>
+
         </div>
       </Card.Body>
     </Card>
