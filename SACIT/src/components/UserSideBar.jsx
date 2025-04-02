@@ -51,7 +51,7 @@ const Sidebar = () => {
         <Nav className="flex-column sidebar-nav">
             {isLoggedIn ? (
                 <>
-                <Nav.Link href="#" className="sidebar-item">
+                <Nav.Link href="/history" className="sidebar-item">
                     <FaHistory className="icon" /> Historial de Trámites
                 </Nav.Link>
                 <Nav.Link href="#" className="sidebar-item mt-auto">
