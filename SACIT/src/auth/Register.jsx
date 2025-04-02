@@ -8,24 +8,75 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const { errors, validateEmail } = useEmailValidation();
+  const { validateEmail } = useEmailValidation();
   const navigate = useNavigate();
+
+  const [errors, setErrors] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+
+  const validateField = (name, value) => {
+    let error = '';
+
+    if (name === 'firstName' && value.trim() === '') {
+      error = 'El nombre es obligatorio';
+    }
+
+    if (name === 'lastName' && value.trim() === '') {
+      error = 'El apellido es obligatorio';
+    }
+
+    if (name === 'email') {
+      if (value.trim() === '') {
+        error = 'El correo es obligatorio';
+      } else {
+        const emailErrors = validateEmail(value);
+        if (emailErrors.email) error = emailErrors.email;
+      }
+    }
+
+    if (name === 'password' && value.trim() === '') {
+      error = 'La contraseña es obligatoria';
+    }
+
+    if (name === 'confirmPassword') {
+      if (value.trim() === '') {
+        error = 'La confirmación de contraseña es obligatoria';
+      } else if (value !== password) {
+        error = 'Las contraseñas no coinciden';
+      }
+    }
+
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
+  };
 
   const handleRegister = (e) => {
     e.preventDefault();
 
-    const validationErrors = validateEmail(email);
-    if (Object.keys(validationErrors).length === 0) {
-      if (password !== confirmPassword) {
-        alert("Las contraseñas no coinciden");
-        return;
-      }
-      
-      console.log("Nombre:", firstName);
-      console.log("Apellido:", lastName);
-      console.log("Correo:", email);
-      console.log("Contraseña:", password);
-      
+    let validationErrors = {
+      firstName: firstName.trim() === '' ? 'El nombre es obligatorio' : '',
+      lastName: lastName.trim() === '' ? 'El apellido es obligatorio' : '',
+      email: email.trim() === '' ? 'El correo es obligatorio' : validateEmail(email).email || '',
+      password: password.trim() === '' ? 'La contraseña es obligatoria' : '',
+      confirmPassword:
+        confirmPassword.trim() === ''
+          ? 'La confirmación de contraseña es obligatoria'
+          : confirmPassword !== password
+          ? 'Las contraseñas no coinciden'
+          : '',
+    };
+
+    setErrors(validationErrors);
+
+    if (Object.values(validationErrors).every((err) => err === '')) {
+      console.log('Nombre:', firstName);
+      console.log('Apellido:', lastName);
+      console.log('Correo:', email);
+      console.log('Contraseña:', password);
 
       navigate('/login');
     }
@@ -38,18 +89,18 @@ const Register = () => {
           <h2 className="text-center mb-4">Registrarse</h2>
 
           <form onSubmit={handleRegister}>
-
             <div className="mb-3">
               <label htmlFor="firstName" className="form-label">Nombre(s)</label>
               <input
                 type="text"
                 id="firstName"
-                className="form-control"
+                className={`form-control ${errors.firstName ? 'is-invalid' : ''}`}
                 placeholder="Ingrese su nombre"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                required
+                onBlur={(e) => validateField('firstName', e.target.value)}
               />
+              {errors.firstName && <div className="invalid-feedback">{errors.firstName}</div>}
             </div>
 
             <div className="mb-3">
@@ -57,12 +108,13 @@ const Register = () => {
               <input
                 type="text"
                 id="lastName"
-                className="form-control"
+                className={`form-control ${errors.lastName ? 'is-invalid' : ''}`}
                 placeholder="Ingrese su apellido"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                required
+                onBlur={(e) => validateField('lastName', e.target.value)}
               />
+              {errors.lastName && <div className="invalid-feedback">{errors.lastName}</div>}
             </div>
 
             <div className="mb-3">
@@ -74,7 +126,7 @@ const Register = () => {
                 placeholder="Ingrese su correo"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
+                onBlur={(e) => validateField('email', e.target.value)}
               />
               {errors.email && <div className="invalid-feedback">{errors.email}</div>}
             </div>
@@ -84,12 +136,13 @@ const Register = () => {
               <input
                 type="password"
                 id="password"
-                className="form-control"
+                className={`form-control ${errors.password ? 'is-invalid' : ''}`}
                 placeholder="Ingrese su contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
+                onBlur={(e) => validateField('password', e.target.value)}
               />
+              {errors.password && <div className="invalid-feedback">{errors.password}</div>}
             </div>
 
             <div className="mb-4">
@@ -97,18 +150,16 @@ const Register = () => {
               <input
                 type="password"
                 id="confirmPassword"
-                className="form-control"
+                className={`form-control ${errors.confirmPassword ? 'is-invalid' : ''}`}
                 placeholder="Confirme su contraseña"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                required
+                onBlur={(e) => validateField('confirmPassword', e.target.value)}
               />
+              {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
             </div>
 
-            <button
-              type="submit"
-              className="btn btn-primary w-100"
-            >
+            <button type="submit" className="btn btn-primary w-100">
               Registrarse
             </button>
           </form>
