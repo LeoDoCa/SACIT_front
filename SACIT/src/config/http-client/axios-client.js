@@ -5,6 +5,9 @@ const APP_JSON = 'application/json';
 
 const AxiosClient = axios.create({
     baseURL: SERVER_URL,
+    headers: {
+        "Content-Type": "application/json",
+      },
 });
 
 const requestHamdler = (req) => {
