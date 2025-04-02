@@ -7,7 +7,7 @@ const ListaUsuarios = () => {
     const [usuarios, setUsuarios] = useState([
         { id: 1, nombre: 'Alan', apellido: 'Yagami', correo: '20223tn046@utez.edu.mx', rol: 'Usuario', contrasena: '' },
         { id: 2, nombre: 'Alan', apellido: 'Yagami', correo: '20223tn046@utez.edu.mx', rol: 'Administrador', contrasena: '' },
-        // Agrega más usuarios según sea necesario
+
     ]);
 
     const [showModal, setShowModal] = useState(false);
@@ -36,12 +36,10 @@ const ListaUsuarios = () => {
 
     return (
         <Container fluid className="p-0 d-flex" style={{ minHeight: '100vh' }}>
-            {/* Sidebar */}
             <div style={{ width: '200px', backgroundColor: '#003366', color: 'white', position: 'sticky', top: 0, height: '100vh' }}>
                 <Sidebar />
             </div>
 
-            {/* Contenido principal */}
             <div className="flex-grow-1 p-4" style={{ backgroundColor: '#f8f9fa' }}>
                 <h2 className="mb-4">Usuarios</h2>
 
@@ -83,7 +81,6 @@ const ListaUsuarios = () => {
                 </Table>
             </div>
 
-            {/* Modal para editar usuario */}
             <Modal show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Editar Usuario</Modal.Title>
