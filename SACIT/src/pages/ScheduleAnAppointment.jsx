@@ -222,7 +222,7 @@ const AgendarCita = () => {
                                         <Button
                                             variant="primary"
                                             onClick={handleNext}
-                                            disabled={!identificacion} // Al menos la identificación es requerida
+                                            disabled={!identificacion}
                                         >
                                             Siguiente
                                         </Button>
