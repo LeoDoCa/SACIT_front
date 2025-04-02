@@ -6,6 +6,7 @@ import ResetPassword from "../auth/ResetPassword.jsx";
 import Register from "../auth/Register.jsx";
 
 import Home from "../pages/Home.jsx";
+import TransactionHistory from "../pages/TransactionHistory.jsx";
 
 import ProcedureForm from "../pages/ProcedureForm.jsx";
 
@@ -16,6 +17,7 @@ const RoutesComponent = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Home />} />
+        <Route path="/history" element={<TransactionHistory />} />
         <Route path='/procedure' element={<ProcedureForm />} />
       </Routes>
     );
