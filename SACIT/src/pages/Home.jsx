@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import UserCard from '../components/UserCard';
 import { Container, Row, Col } from 'react-bootstrap';
 
+import UserSideBar from '../components/UserSideBar';
+
 const Home = () => {
   const [visibleRequirements, setVisibleRequirements] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
@@ -75,6 +77,7 @@ const Home = () => {
 
   return (
     <>
+      <UserSideBar />
       <Container className="py-4">
         
         <h1 className="text-center mb-4">Nuestros Servicios</h1>
