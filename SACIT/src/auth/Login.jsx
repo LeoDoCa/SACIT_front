@@ -46,7 +46,7 @@ const Login = () => {
 
         const userRole = response.role;
         if (userRole === 'ROLE_ADMIN') {
-          navigate('/admin-dashboard'); 
+          navigate('/procedure-form'); 
         } else if (userRole === 'ROLE_USER') {
           navigate('/user-dashboard');
         } else if (userRole === 'ROLE_WINDOW') {
