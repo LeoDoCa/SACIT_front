@@ -1,14 +1,35 @@
 import React, { useState } from 'react';
 import useEmailValidation from '../hooks/useEmailValidation';
+import { useNavigate } from 'react-router-dom';
 
 const ResetPassword = () => {
   const [email, setEmail] = useState('');
-  const { errors, validateEmail } = useEmailValidation();
+  const { validateEmail } = useEmailValidation();
+  const [errors, setErrors] = useState({email: ''});
+  const navigate = useNavigate();
+
+    const validateField = (name, value) => {
+    let error = '';
+    if (name === 'email') {
+        if (value.trim() === '') {
+            error = 'El correo es obligatorio';
+        } else {
+            const emailErrors = validateEmail(value);
+            if (emailErrors.email) error = emailErrors.email;
+        }
+        }
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
+    }
 
   const handleResetPassword = (e) => {
     e.preventDefault();
 
-    const validationErrors = validateEmail(email);
+    let validationErrors = {};
+    validationErrors.email = email.trim() === '' ? 'El correo es obligatorio' : validateEmail(email).email || '';
+    setErrors(validationErrors);
+    if (!validationErrors.email ) { 
+        navigate('/');
+    }
     if (Object.keys(validationErrors).length === 0) {
       console.log("Correo enviado para restablecer la contraseña a:", email);
 
@@ -31,6 +52,7 @@ const ResetPassword = () => {
                 placeholder="Ingrese su correo"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={(e) => validateField('email', e.target.value)}
                 required
               />
               {errors.email && <div className="invalid-feedback">{errors.email}</div>}
