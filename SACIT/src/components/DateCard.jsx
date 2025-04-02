@@ -13,7 +13,8 @@ const DateCard = ({ tipo, horario }) => {
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                         style={{ color: '#007bff' }}
-                    >
+                    >   
+                    
                         <rect x="3" y="4" width="18" height="16" rx="2" fill="#007bff" />
                         <path d="M7 4V2" stroke="white" strokeWidth="2" strokeLinecap="round" />
                         <path d="M17 4V2" stroke="white" strokeWidth="2" strokeLinecap="round" />

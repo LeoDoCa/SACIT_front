@@ -5,7 +5,6 @@ import Sidebar from '../components/Siderbar';
 import CitaCard from '../components/DateCard';
 
 const CitasDelDia = () => {
-    // Datos de ejemplo para las citas
     const citas = [
         { id: 1, tipo: 'Renovación de Pasaporte', horario: '00:00:00' },
         { id: 2, tipo: 'Renovación de Pasaporte', horario: '00:00:00' },
@@ -23,12 +22,10 @@ const CitasDelDia = () => {
 
     return (
         <Container fluid className="p-0 d-flex" style={{ minHeight: '100vh' }}>
-            {/* Importar el Sidebar */}
             <div style={{ width: '200px', backgroundColor: '#003366', color: 'white', position: 'sticky', top: 0, height: '100vh' }}>
                 <Sidebar />
             </div>
 
-            {/* Contenido principal */}
             <div className="flex-grow-1 p-4">
                 <h2 className="mb-4">Citas del día</h2>
 

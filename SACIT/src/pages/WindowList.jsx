@@ -4,7 +4,6 @@ import { Container, Table, Button } from 'react-bootstrap';
 import Sidebar from '../components/Siderbar';
 
 const ListWindow = () => {
-    // Estado para las ventanillas
     const [ventanillas, setVentanillas] = useState([
         { id: 1, numero: 1, nombre: 'Ventanilla1' },
         { id: 2, numero: 2, nombre: 'Ventanilla2' },
@@ -16,23 +15,18 @@ const ListWindow = () => {
         { id: 8, numero: 8, nombre: 'Ventanilla8' }
     ]);
 
-    // Función para eliminar una ventanilla
     const handleEliminar = (id) => {
         setVentanillas(ventanillas.filter(ventanilla => ventanilla.id !== id));
     };
 
-    // Función para editar una ventanilla
     const handleEditar = (id) => {
         console.log("Editar ventanilla con ID:", id);
-        // Aquí iría la lógica para abrir formulario de edición o redireccionar
     };
 
     return (
         <Container fluid className="p-0 d-flex" style={{ minHeight: '100vh' }}>
-            {/* Importar el Sidebar */}
             <Sidebar />
 
-            {/* Contenido principal */}
             <div className="flex-grow-1 p-4">
                 <h2 className="mb-4">Ventanillas</h2>
 

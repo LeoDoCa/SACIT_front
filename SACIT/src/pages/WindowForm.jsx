@@ -4,7 +4,6 @@ import { Container, Form, Button, Row, Col } from 'react-bootstrap';
 import Sidebar from '../components/Siderbar';
 
 const AddWindow = () => {
-    // Estado para el formulario
     const [formData, setFormData] = useState({
         numeroVentanilla: '',
         nombre: '',
@@ -12,31 +11,24 @@ const AddWindow = () => {
         finHorario: ''
     });
 
-    // Manejador para los cambios en los campos
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    // Manejador para guardar
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log('Datos de la ventanilla:', formData);
-        // Aquí iría la lógica para enviar los datos
     };
 
-    // Manejador para cancelar
     const handleCancel = () => {
         console.log('Operación cancelada');
-        // Aquí iría la lógica para cancelar, como redireccionar
     };
 
     return (
         <Container fluid className="p-0 d-flex" style={{ minHeight: '100vh' }}>
-            {/* Importar el Sidebar */}
             <Sidebar />
 
-            {/* Contenido principal */}
             <div className="flex-grow-1 p-4">
                 <h2 className="mb-4">Agregar ventanilla</h2>
 
