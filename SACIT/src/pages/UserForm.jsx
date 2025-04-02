@@ -8,7 +8,7 @@ const RegisterUser = () => {
         nombre: '',
         apellidos: '',
         correo: '',
-        rol: 'ventanilla', // Valor predeterminado
+        rol: 'ventanilla',
         contrasena: '',
         confirmarContrasena: ''
     });
@@ -20,7 +20,6 @@ const RegisterUser = () => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
 
-        // Verificar coincidencia de contraseñas cuando se cambia alguna de ellas
         if (name === 'contrasena' || name === 'confirmarContrasena') {
             const otherField = name === 'contrasena' ? 'confirmarContrasena' : 'contrasena';
             setPasswordMatch(value === formData[otherField] || value === '' || formData[otherField] === '');
@@ -31,7 +30,6 @@ const RegisterUser = () => {
         e.preventDefault();
         const form = e.currentTarget;
 
-        // Verificar que las contraseñas coincidan
         if (formData.contrasena !== formData.confirmarContrasena) {
             setPasswordMatch(false);
             e.stopPropagation();
@@ -42,7 +40,7 @@ const RegisterUser = () => {
             e.stopPropagation();
         } else {
             console.log('Datos del usuario:', formData);
-            // Aquí iría la lógica para enviar los datos al servidor
+
         }
 
         setValidated(true);
