@@ -10,21 +10,17 @@ import esLocale from '@fullcalendar/core/locales/es';
 const AgendarCita = () => {
     const calendarRef = useRef(null);
 
-    // Estados para la cita
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState('');
     const [availableTimes, setAvailableTimes] = useState([]);
     const [identificacion, setIdentificacion] = useState(null);
     const [recetaMedica, setRecetaMedica] = useState(null);
 
-    // Control de la pantalla actual
     const [currentStep, setCurrentStep] = useState(1);
 
-    // Función para manejar el clic en una fecha
     const handleDateClick = (info) => {
         setSelectedDate(info.dateStr);
 
-        // Generar horarios disponibles (esto normalmente vendría de tu API)
         const times = [];
         for (let hour = 9; hour <= 17; hour++) {
             times.push(`${hour.toString().padStart(2, '0')}:00`);
@@ -33,20 +29,17 @@ const AgendarCita = () => {
             }
         }
         setAvailableTimes(times);
-        setSelectedTime(''); // Resetear la hora seleccionada
+        setSelectedTime(''); 
     };
 
-    // Función para ir al siguiente paso
     const handleNext = () => {
         setCurrentStep(currentStep + 1);
     };
 
-    // Función para ir al paso anterior
     const handleBack = () => {
         setCurrentStep(currentStep - 1);
     };
 
-    // Función para cancelar todo el proceso
     const handleCancelar = () => {
         setSelectedDate(null);
         setSelectedTime('');
@@ -56,22 +49,18 @@ const AgendarCita = () => {
         setCurrentStep(1);
     };
 
-    // Función para confirmar la cita final
     const handleConfirmar = () => {
         console.log('Cita confirmada para:', selectedDate, selectedTime);
         console.log('Archivos adjuntos:', identificacion, recetaMedica);
-        // Aquí se enviaría la información a tu backend
+
         alert(`Cita agendada con éxito para el ${formatDate(selectedDate)} a las ${selectedTime}`);
-        // Resetear todo después de confirmar (opcional)
+
         handleCancelar();
     };
 
-    // Función para formatear la fecha para mostrar
     const formatDate = (dateStr) => {
-        // Crear la fecha manteniendo la fecha original sin ajuste de zona horaria
         const [year, month, day] = dateStr.split('-').map(Number);
 
-        // El mes en JavaScript es base 0 (0-11), por lo que restamos 1 al mes
         const date = new Date(year, month - 1, day);
 
         return date.toLocaleDateString('es-ES', {
@@ -82,14 +71,12 @@ const AgendarCita = () => {
         });
     };
 
-    // Manejar cambios en los archivos
     const handleFileChange = (e, setFile) => {
         if (e.target.files && e.target.files[0]) {
             setFile(e.target.files[0]);
         }
     };
 
-    // Componente para la barra de progreso
     const StepProgressBar = () => {
         return (
             <div className="mb-4">
@@ -105,7 +92,6 @@ const AgendarCita = () => {
         );
     };
 
-    // Componente para el paso 1: Selección de fecha y hora
     const Step1 = () => {
         return (
             <Row>
@@ -188,7 +174,6 @@ const AgendarCita = () => {
         );
     };
 
-    // Componente para el paso 2: Subida de documentos
     const Step2 = () => {
         return (
             <Row className="justify-content-center">
@@ -197,7 +182,6 @@ const AgendarCita = () => {
                         <Card.Body>
                             <h4 className="mb-4">Subir Documentos</h4>
                             <Form>
-                                {/* Input para subir identificación */}
                                 <Form.Group className="mb-4">
                                     <Form.Label><strong>Identificación:</strong></Form.Label>
                                     <Form.Control
@@ -209,7 +193,6 @@ const AgendarCita = () => {
                                     </Form.Text>
                                 </Form.Group>
 
-                                {/* Input para subir receta médica */}
                                 <Form.Group className="mb-4">
                                     <Form.Label><strong>Receta Médica:</strong></Form.Label>
                                     <Form.Control
@@ -253,7 +236,6 @@ const AgendarCita = () => {
         );
     };
 
-    // Componente para el paso 3: Confirmación de la cita
     const Step3 = () => {
         return (
             <Row className="justify-content-center">
@@ -312,19 +294,15 @@ const AgendarCita = () => {
         );
     };
 
-    // Renderizado principal
     return (
         <Container fluid className="p-0 d-flex" style={{ minHeight: '100vh' }}>
 
 
-            {/* Contenido principal */}
             <div className="flex-grow-1 p-4">
                 <h2 className="mb-4">Agendar Cita</h2>
 
-                {/* Barra de progreso */}
                 <StepProgressBar />
 
-                {/* Contenido según el paso actual */}
                 {currentStep === 1 && <Step1 />}
                 {currentStep === 2 && <Step2 />}
                 {currentStep === 3 && <Step3 />}
