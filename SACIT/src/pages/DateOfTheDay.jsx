@@ -1,7 +1,7 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Row, Col } from 'react-bootstrap';
-import Sidebar from '../components/Siderbar';
+import Sidebar from '../components/Sidebar';
 import CitaCard from '../components/DateCard';
 
 const CitasDelDia = () => {

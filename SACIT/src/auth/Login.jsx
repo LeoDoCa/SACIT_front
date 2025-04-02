@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useEmailValidation from '../hooks/useEmailValidation';
+import { login } from '../config/http-client/authService';
+import Swal from 'sweetalert2';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -28,7 +30,7 @@ const Login = () => {
     setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     let validationErrors = {};
@@ -38,9 +40,25 @@ const Login = () => {
     setErrors(validationErrors);
 
     if (!validationErrors.email && !validationErrors.password) {
-      console.log('Correo:', email);
-      console.log('Contraseña:', password);
-      navigate('/');
+      try {
+        const response = await login(email, password);
+        localStorage.setItem('user', JSON.stringify(response));
+
+        const userRole = response.role;
+        if (userRole === 'ROLE_ADMIN') {
+          navigate('/admin-dashboard'); 
+        } else if (userRole === 'ROLE_USER') {
+          navigate('/user-dashboard');
+        } else if (userRole === 'ROLE_WINDOW') {
+          navigate('/window-dashboard');
+        } else {
+          navigate('/'); 
+        }
+
+        Swal.fire('Éxito', 'Inicio de sesión exitoso', 'success');
+      } catch (error) {
+        Swal.fire('Error', error, 'error'); 
+      }
     }
   };
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Form, Button, Row, Col } from 'react-bootstrap';
-import Sidebar from '../components/Siderbar';
+import Sidebar from '../components/Sidebar.jsx';
 
 const AddWindow = () => {
     const [formData, setFormData] = useState({
