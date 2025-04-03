@@ -1,15 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Button, Nav } from 'react-bootstrap';
+import { useNavigate } from "react-router-dom"
 import { FaUser, FaHistory, FaSignOutAlt, FaBars, FaTimes, FaUserPlus } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import AuthContext from '../config/context/auth-context';
+import Swal from "sweetalert2";
 
 const Sidebar = () => {
+  const { dispatch } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const isLoggedIn = !!localStorage.getItem("accessToken");
+  const [userData, setUserData] = useState({ name: '', email: '' });
+  const navigate = useNavigate();
   
+  useEffect(() => {
+    if (isLoggedIn) {
+      try {
+        const userJson = localStorage.getItem('user');
+        if (userJson) {
+          const user = JSON.parse(userJson);
+          setUserData({
+            name: user.name + " " + user.lastName || 'Usuario',
+            email: user.email || 'correo@example.com'
+          });
+        }
+      } catch (error) {
+        console.error('Error al obtener datos del usuario:', error);
+      }
+    }
+  }, [isLoggedIn]);
+
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
+
+  const handleLogout = () => {
+    Swal.fire({
+        title: "¿Deseas cerrar sesión?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, cerrar sesión',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true,
+        confirmButtonColor: '#002E5D',
+        iconColor: '#c9dae1'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            localStorage.removeItem('user');
+            localStorage.removeItem('accessToken');
+
+            dispatch({ type: 'SIGNOUT' })
+            navigate('/login', { replace: true });
+            Swal.fire({
+                title: '¡Sesión cerrada!',
+                text: 'Has cerrado sesión correctamente',
+                icon: 'success',
+                confirmButtonColor: '#002E5D'
+            });
+        }
+    })
+};
 
   return (
     <>
@@ -24,12 +74,12 @@ const Sidebar = () => {
       <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
         <div className="sidebar-header">
           <div className="user-avatar">
-            <FaUser size={50} />
+            <FaUser size={45} />
           </div>
           {isLoggedIn ? (
             <div className="user-info">
-              <h3>Nombre del Usuario</h3>
-              <p>correo@example.com</p>
+              <h3>{userData.name}</h3>
+              <p>{userData.email}</p>
             </div>
           ) : (
             <div className="register-button">
@@ -54,13 +104,13 @@ const Sidebar = () => {
                 <Nav.Link href="/history" className="sidebar-item">
                     <FaHistory className="icon" /> Historial de Trámites
                 </Nav.Link>
-                <Nav.Link href="#" className="sidebar-item mt-auto">
+                <Nav.Link href="#" className="sidebar-item mt-auto" onClick={handleLogout}>
                     <FaSignOutAlt className="icon" /> Cerrar sesión
                 </Nav.Link>
                 </>
             ) : (
                 <>
-                <Nav.Link href="#" className="sidebar-item">
+                <Nav.Link href="/register" className="sidebar-item">
                     <FaUserPlus className="register-icon" />
                     Registrarse
                 </Nav.Link>
@@ -79,7 +129,7 @@ const Sidebar = () => {
         ></div>
       )}
       
-      <style jsx>{`
+      <style>{`
         .sidebar {
           position: fixed;
           top: 0;
