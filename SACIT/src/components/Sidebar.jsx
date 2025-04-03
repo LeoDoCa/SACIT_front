@@ -1,14 +1,54 @@
-import React from 'react';
 import { Button } from 'react-bootstrap';
+import { useNavigate } from "react-router-dom"
+import React, { useContext } from 'react';
+import AuthContext from '../config/context/auth-context';
+import Swal from "sweetalert2";
 
 const Sidebar = () => {
+    const { dispatch } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        Swal.fire({
+            title: "¿Deseas cerrar sesión?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, cerrar sesión',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true,
+            confirmButtonColor: '#002E5D',
+            iconColor: '#c9dae1'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.removeItem('user');
+                localStorage.removeItem('accessToken');
+    
+                dispatch({ type: 'SIGNOUT' })
+                navigate('/login', { replace: true });
+                Swal.fire({
+                    title: '¡Sesión cerrada!',
+                    text: 'Has cerrado sesión correctamente',
+                    icon: 'success',
+                    confirmButtonColor: '#002E5D'
+                });
+            }
+        })
+    };
+
     return (
-        <div style={{ width: '200px', backgroundColor: '#003366', color: 'white', minHeight: '100vh' }}>
+        <div style={{ 
+            width: '200px', 
+            backgroundColor: '#1e2a3a', 
+            color: 'white', 
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
             <div className="p-3">
                 <h4 className="mb-4 text-white">Menú</h4>
-
+        
                 <div className="accordion accordion-flush" id="menuAccordion">
-                    <div className="accordion-item" style={{ backgroundColor: '#003366' }}>
+                    <div className="accordion-item" style={{ backgroundColor: '#2d3a4e' }}>
                         <h2 className="accordion-header">
                             <button
                                 className="accordion-button collapsed text-white"
@@ -18,7 +58,7 @@ const Sidebar = () => {
                                 aria-expanded="false"
                                 aria-controls="tramitesMenu"
                                 style={{
-                                    backgroundColor: '#003366',
+                                    backgroundColor: '#1e2a3a',
                                     border: 'none',
                                 }}
                             >
@@ -31,10 +71,10 @@ const Sidebar = () => {
                             data-bs-parent="#menuAccordion"
                         >
                             <div className="accordion-body p-0">
-                                <ul className="list-unstyled ms-3">
-                                    <li>
+                                <ul className="list-unstyled ms-3 mt-3">
+                                    <li className='mb-2'>
                                         <a
-                                            href="#agregar-tramite"
+                                            href="/procedure-form"
                                             className="text-white text-decoration-none"
                                         >
                                             Agregar
@@ -42,7 +82,7 @@ const Sidebar = () => {
                                     </li>
                                     <li>
                                         <a
-                                            href="#ver-tramites"
+                                            href="/procedure-list"
                                             className="text-white text-decoration-none"
                                         >
                                             Ver Trámites
@@ -52,8 +92,8 @@ const Sidebar = () => {
                             </div>
                         </div>
                     </div>
-
-                    <div className="accordion-item" style={{ backgroundColor: '#003366' }}>
+        
+                    <div className="accordion-item" style={{ backgroundColor: '#2d3a4e' }}>
                         <h2 className="accordion-header">
                             <button
                                 className="accordion-button collapsed text-white"
@@ -63,7 +103,7 @@ const Sidebar = () => {
                                 aria-expanded="false"
                                 aria-controls="ventanillasMenu"
                                 style={{
-                                    backgroundColor: '#003366',
+                                    backgroundColor: '#1e2a3a',
                                     border: 'none',
                                 }}
                             >
@@ -76,10 +116,10 @@ const Sidebar = () => {
                             data-bs-parent="#menuAccordion"
                         >
                             <div className="accordion-body p-0">
-                                <ul className="list-unstyled ms-3">
-                                    <li>
+                                <ul className="list-unstyled ms-3 mt-3">
+                                    <li className='mb-2'>
                                         <a
-                                            href="#agregar-ventanilla"
+                                            href="/window-form"
                                             className="text-white text-decoration-none"
                                         >
                                             Agregar
@@ -87,7 +127,7 @@ const Sidebar = () => {
                                     </li>
                                     <li>
                                         <a
-                                            href="#ver-ventanillas"
+                                            href="/window-list"
                                             className="text-white text-decoration-none"
                                         >
                                             Ver Ventanillas
@@ -97,8 +137,8 @@ const Sidebar = () => {
                             </div>
                         </div>
                     </div>
-
-                    <div className="accordion-item" style={{ backgroundColor: '#003366' }}>
+        
+                    <div className="accordion-item" style={{ backgroundColor: '#2d3a4e' }}>
                         <h2 className="accordion-header">
                             <button
                                 className="accordion-button collapsed text-white"
@@ -108,7 +148,7 @@ const Sidebar = () => {
                                 aria-expanded="false"
                                 aria-controls="citasMenu"
                                 style={{
-                                    backgroundColor: '#003366',
+                                    backgroundColor: '#1e2a3a',
                                     border: 'none',
                                 }}
                             >
@@ -121,10 +161,10 @@ const Sidebar = () => {
                             data-bs-parent="#menuAccordion"
                         >
                             <div className="accordion-body p-0">
-                                <ul className="list-unstyled ms-3">
+                                <ul className="list-unstyled ms-3 mt-3">
                                     <li>
                                         <a
-                                            href="#ver-citas"
+                                            href="/date-off-the-day"
                                             className="text-white text-decoration-none"
                                         >
                                             Ver Citas
@@ -134,8 +174,8 @@ const Sidebar = () => {
                             </div>
                         </div>
                     </div>
-
-                    <div className="accordion-item" style={{ backgroundColor: '#003366' }}>
+        
+                    <div className="accordion-item mb-5" style={{ backgroundColor: '#2d3a4e' }}>
                         <h2 className="accordion-header">
                             <button
                                 className="accordion-button collapsed text-white"
@@ -145,7 +185,7 @@ const Sidebar = () => {
                                 aria-expanded="false"
                                 aria-controls="usuariosMenu"
                                 style={{
-                                    backgroundColor: '#003366',
+                                    backgroundColor: '#1e2a3a',
                                     border: 'none',
                                 }}
                             >
@@ -158,10 +198,10 @@ const Sidebar = () => {
                             data-bs-parent="#menuAccordion"
                         >
                             <div className="accordion-body p-0">
-                                <ul className="list-unstyled ms-3">
-                                    <li>
+                                <ul className="list-unstyled ms-3 mt-3 pb-3">
+                                    <li className='mb-2'>
                                         <a
-                                            href="#ver-usuarios"
+                                            href="/user-list"
                                             className="text-white text-decoration-none"
                                         >
                                             Ver Usuarios
@@ -169,10 +209,10 @@ const Sidebar = () => {
                                     </li>
                                     <li>
                                         <a
-                                            href="#crear-administradores"
+                                            href="/user-form"
                                             className="text-white text-decoration-none"
                                         >
-                                            Crear Administradores
+                                            Crear Usuarios
                                         </a>
                                     </li>
                                 </ul>
@@ -181,14 +221,16 @@ const Sidebar = () => {
                     </div>
                 </div>
             </div>
-
-            <div className="mt-auto" style={{ position: 'absolute', bottom: 0, width: '200px' }}>
+        
+            <div className="mt-auto" style={{ position: 'relative', width: '100%' }}>
                 <Button
                     variant="success"
-                    className="d-flex align-items-center justify-content-center w-100 rounded-0 py-2"
+                    className="d-flex align-items-center justify-content-center w-100 rounded-0 py-2 p-2"
+                    style={{height: '4rem'}}
+                    onClick={handleLogout}
                 >
                     <span className="me-2">CERRAR SESIÓN</span>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <svg width="24" height="30" viewBox="0 0 24 24" fill="none">
                         <path d="M5 5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h7v-2H5V5z" fill="white" />
                         <path d="M21 12l-4-4v3H9v2h8v3l4-4z" fill="white" />
                     </svg>
