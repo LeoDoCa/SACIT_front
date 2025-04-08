@@ -18,21 +18,128 @@ const AgendarCita = () => {
 
     const [currentStep, setCurrentStep] = useState(1);
 
+    const [scheduledAppointments, setScheduledAppointments] = useState([
+        { date: '2025-04-07', time: '09:00', duration: 30 },
+        { date: '2025-04-07', time: '10:00', duration: 45 },
+        { date: '2025-04-07', time: '11:00', duration: 60 },
+        { date: '2025-04-08', time: '09:30', duration: 30 },
+        { date: '2025-04-08', time: '11:00', duration: 60 },
+        { date: '2025-04-09', time: '10:15', duration: 45 },
+        { date: '2025-04-09', time: '13:00', duration: 30 },
+        { date: '2025-04-10', time: '09:00', duration: 30 },
+        { date: '2025-04-10', time: '12:00', duration: 45 },
+        { date: '2025-04-11', time: '10:30', duration: 30 },
+        { date: '2025-04-11', time: '14:00', duration: 60 },
+        { date: '2025-04-14', time: '09:45', duration: 30 },
+        { date: '2025-04-14', time: '11:00', duration: 60 },
+        { date: '2025-04-15', time: '10:00', duration: 30 },
+        { date: '2025-04-15', time: '13:00', duration: 45 },
+        { date: '2025-04-16', time: '09:30', duration: 30 },
+        { date: '2025-04-16', time: '11:00', duration: 60 },
+        { date: '2025-04-17', time: '10:15', duration: 45 },
+        { date: '2025-04-17', time: '12:00', duration: 30 },
+        { date: '2025-04-18', time: '09:00', duration: 30 },
+        { date: '2025-04-18', time: '14:00', duration: 45 },
+    ]);
+
     const handleDateClick = (info) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const selectedDateObj = new Date(info.dateStr + "T00:00:00");
+
+        const todayTime = today.getTime();
+        const selectedTime = selectedDateObj.getTime();
+
+        if (selectedTime < todayTime) {
+            alert('No puedes seleccionar días anteriores al actual.');
+            return;
+        }
+
+        const maxDate = new Date(today);
+        maxDate.setDate(maxDate.getDate() + 30);
+
+        if (selectedDateObj > maxDate) {
+            alert('Por favor selecciona una fecha válida (entre hoy y los próximos 30 días).');
+            return;
+        }
+
         setSelectedDate(info.dateStr);
 
+        const isToday = selectedDateObj.toDateString() === today.toDateString();
+
         const times = [];
-        for (let hour = 9; hour <= 17; hour++) {
-            times.push(`${hour.toString().padStart(2, '0')}:00`);
-            if (hour < 17) {
-                times.push(`${hour.toString().padStart(2, '0')}:30`);
+        const startHour = 9;
+        const endHour = 15;
+
+        let currentHour = startHour;
+        let currentMinute = 0;
+
+        if (isToday) {
+            const now = new Date();
+
+            if (now.getHours() > startHour ||
+                (now.getHours() === startHour && now.getMinutes() > 0)) {
+
+                currentHour = now.getHours();
+
+                if (now.getMinutes() <= 30) {
+                    currentMinute = 30;
+                } else {
+                    currentHour += 1;
+                    currentMinute = 0;
+                }
             }
         }
+
+        const appointmentsForDay = scheduledAppointments.filter(
+            appointment => appointment.date === info.dateStr
+        );
+
+        while (currentHour < endHour || (currentHour === endHour && currentMinute === 0)) {
+            const timeSlot = new Date(selectedDateObj);
+            timeSlot.setHours(currentHour, currentMinute, 0, 0);
+
+            const slotEnd = new Date(timeSlot);
+            slotEnd.setMinutes(slotEnd.getMinutes() + 30);
+
+            const isSlotAvailable = !appointmentsForDay.some(appointment => {
+                const appointmentStart = new Date(`${appointment.date}T${appointment.time}`);
+                const appointmentEnd = new Date(appointmentStart);
+                appointmentEnd.setMinutes(appointmentEnd.getMinutes() + appointment.duration);
+
+                return (
+                    (timeSlot < appointmentEnd && slotEnd > appointmentStart)
+                );
+            });
+
+            if (isSlotAvailable) {
+                const formattedHour = currentHour.toString().padStart(2, '0');
+                const formattedMinute = currentMinute.toString().padStart(2, '0');
+                times.push(`${formattedHour}:${formattedMinute}`);
+            }
+
+            if (currentMinute === 30) {
+                currentMinute = 0;
+                currentHour++;
+            } else {
+                currentMinute = 30;
+            }
+        }
+
         setAvailableTimes(times);
-        setSelectedTime(''); 
+        setSelectedTime('');
     };
 
     const handleNext = () => {
+        const today = new Date();
+        const selectedDateTime = new Date(`${selectedDate}T${selectedTime}`);
+
+        if (selectedDateTime < today) {
+            alert('Por favor selecciona una hora válida.');
+            return;
+        }
+
         setCurrentStep(currentStep + 1);
     };
 
@@ -105,19 +212,28 @@ const AgendarCita = () => {
                                 headerToolbar={{
                                     left: 'prev,next today',
                                     center: 'title',
-                                    right: 'dayGridMonth,timeGridWeek'
+                                    right: 'dayGridMonth,timeGridWeek',
                                 }}
                                 locale={esLocale}
                                 selectable={true}
-                                dateClick={handleDateClick}
+                                dateClick={(info) => handleDateClick(info)}
+                                events={scheduledAppointments.map((appointment) => ({
+                                    title: 'Cita',
+                                    start: `${appointment.date}T${appointment.time}`,
+                                    end: new Date(new Date(`${appointment.date}T${appointment.time}`).getTime() + appointment.duration * 60000).toISOString(),
+                                }))}
                                 height="auto"
                                 themeSystem="bootstrap"
                                 eventColor="#003366"
                                 buttonText={{
                                     today: 'Hoy',
                                     month: 'Mes',
-                                    week: 'Semana'
+                                    week: 'Semana',
                                 }}
+                                validRange={{
+                                    start: new Date(), 
+                                }}
+                                hiddenDays={[0, 6]} 
                             />
                         </Card.Body>
                     </Card>
@@ -296,8 +412,6 @@ const AgendarCita = () => {
 
     return (
         <Container fluid className="p-0 d-flex" style={{ minHeight: '100vh' }}>
-
-
             <div className="flex-grow-1 p-4">
                 <h2 className="mb-4">Agendar Cita</h2>
 
