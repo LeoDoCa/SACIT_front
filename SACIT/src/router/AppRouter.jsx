@@ -17,6 +17,7 @@ import WindowList from "../pages/WindowList.jsx";
 import UserForm from "../pages/UserForm.jsx";
 import UserList from "../pages/UserList.jsx";
 import DateOffTheDay from "../pages/DateOfTheDay.jsx";
+import ResetPasswordForm from '../auth/ResetPasswordForm.jsx';
 
 import TransactionHistory from "../pages/TransactionHistory.jsx";
 
@@ -37,6 +38,7 @@ const RoutesComponent = () => {
       <Route path="/" element={<Home />} />
       <Route path="/schedule" element={<ScheduleAnAppointment />} />
       <Route path="/service-system" element={<ServiceSystem />} />
+      <Route path="/reset-password/:token" element={<ResetPasswordForm />} />
 
       <Route
         path="/history"
