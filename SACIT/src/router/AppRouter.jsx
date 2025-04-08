@@ -8,6 +8,8 @@ import Register from "../auth/Register.jsx";
 import Home from "../pages/Home.jsx";
 import ScheduleAnAppointment from "../pages/ScheduleAnAppointment.jsx";
 
+import ServiceSystem from "../pages/ServiceSystem.jsx";
+
 import ProcedureForm from "../pages/ProcedureForm.jsx";
 import ProcedureList from "../pages/ProcedureList.jsx";
 import WindowForm from "../pages/WindowForm.jsx";
@@ -34,6 +36,7 @@ const RoutesComponent = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/" element={<Home />} />
       <Route path="/schedule" element={<ScheduleAnAppointment />} />
+      <Route path="/service-system" element={<ServiceSystem />} />
 
       <Route
         path="/history"
