@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useEmailValidation from '../hooks/useEmailValidation';
+import { register } from '../config/http-client/authService';
+import Swal from 'sweetalert2';
 
 const Register = () => {
-  const [firstName, setFirstName] = useState('');
+  const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const { validateEmail } = useEmailValidation();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [errors, setErrors] = useState({
-    firstName: '',
+    name: '',
     lastName: '',
     email: '',
     password: '',
@@ -22,7 +25,7 @@ const Register = () => {
   const validateField = (name, value) => {
     let error = '';
 
-    if (name === 'firstName' && value.trim() === '') {
+    if (name === 'name' && value.trim() === '') {
       error = 'El nombre es obligatorio';
     }
 
@@ -39,8 +42,12 @@ const Register = () => {
       }
     }
 
-    if (name === 'password' && value.trim() === '') {
-      error = 'La contraseña es obligatoria';
+    if (name === 'password') {
+      if (value.trim() === '') {
+        error = 'La contraseña es obligatoria';
+      } else if (value.length < 8) {
+        error = 'La contraseña debe tener al menos 8 caracteres';
+      }
     }
 
     if (name === 'confirmPassword') {
@@ -54,14 +61,15 @@ const Register = () => {
     setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     let validationErrors = {
-      firstName: firstName.trim() === '' ? 'El nombre es obligatorio' : '',
+      name: name.trim() === '' ? 'El nombre es obligatorio' : '',
       lastName: lastName.trim() === '' ? 'El apellido es obligatorio' : '',
       email: email.trim() === '' ? 'El correo es obligatorio' : validateEmail(email).email || '',
-      password: password.trim() === '' ? 'La contraseña es obligatoria' : '',
+      password: password.trim() === '' ? 'La contraseña es obligatoria' : 
+                password.length < 6 ? 'La contraseña debe tener al menos 6 caracteres' : '',      
       confirmPassword:
         confirmPassword.trim() === ''
           ? 'La confirmación de contraseña es obligatoria'
@@ -73,12 +81,29 @@ const Register = () => {
     setErrors(validationErrors);
 
     if (Object.values(validationErrors).every((err) => err === '')) {
-      console.log('Nombre:', firstName);
-      console.log('Apellido:', lastName);
-      console.log('Correo:', email);
-      console.log('Contraseña:', password);
-
-      navigate('/login');
+      setIsLoading(true);
+      
+      try {
+        await register({
+          name,
+          lastName,
+          email,
+          password
+        });
+        
+        Swal.fire({
+          title: 'Registro exitoso',
+          text: 'Tu cuenta ha sido creada correctamente',
+          icon: 'success',
+          confirmButtonText: 'Iniciar sesión'
+        }).then(() => {
+          navigate('/login');
+        });
+      } catch (error) {
+        Swal.fire('Error', error.message || 'Error al crear la cuenta', 'error');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -90,17 +115,17 @@ const Register = () => {
 
           <form onSubmit={handleRegister}>
             <div className="mb-3">
-              <label htmlFor="firstName" className="form-label">Nombre(s)</label>
+              <label htmlFor="name" className="form-label">Nombre(s)</label>
               <input
                 type="text"
-                id="firstName"
-                className={`form-control ${errors.firstName ? 'is-invalid' : ''}`}
+                id="name"
+                className={`form-control ${errors.name ? 'is-invalid' : ''}`}
                 placeholder="Ingrese su nombre"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                onBlur={(e) => validateField('firstName', e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={(e) => validateField('name', e.target.value)}
               />
-              {errors.firstName && <div className="invalid-feedback">{errors.firstName}</div>}
+              {errors.firstName && <div className="invalid-feedback">{errors.name}</div>}
             </div>
 
             <div className="mb-3">
@@ -159,8 +184,19 @@ const Register = () => {
               {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
             </div>
 
-            <button type="submit" className="btn btn-primary w-100">
-              Registrarse
+            <button 
+              type="submit" 
+              className="btn btn-primary w-100"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Procesando...
+                </>
+              ) : (
+                'Registrarse'
+              )}
             </button>
           </form>
 
