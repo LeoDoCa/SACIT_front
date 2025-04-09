@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import useEmailValidation from '../hooks/useEmailValidation';
 import { login } from '../config/http-client/authService';
 import Swal from 'sweetalert2';
+import DOMPurify from 'dompurify';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({ email: '', password: '' });
-  const { validateEmail } = useEmailValidation();
+  const validateEmail = useEmailValidation();
   const navigate = useNavigate();
 
   const validateField = (name, value) => {
@@ -18,8 +19,8 @@ const Login = () => {
       if (value.trim() === '') {
         error = 'El correo es obligatorio';
       } else {
-        const emailErrors = validateEmail(value);
-        if (emailErrors.email) error = emailErrors.email;
+        const emailError = validateEmail(value);
+        if (emailError) error = emailError;
       }
     }
 
@@ -33,9 +34,13 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    let validationErrors = {};
-    validationErrors.email = email.trim() === '' ? 'El correo es obligatorio' : validateEmail(email).email || '';
-    validationErrors.password = password.trim() === '' ? 'La contraseña es obligatoria' : '';
+    const sanitizedEmail = DOMPurify.sanitize(email);
+    const sanitizedPassword = DOMPurify.sanitize(password);
+
+    let validationErrors = {
+      email: sanitizedEmail.trim() === '' ? 'El correo es obligatorio' : validateEmail(sanitizedEmail),
+      password : password.trim() === '' ? 'La contraseña es obligatoria' : ''
+    };
 
     setErrors(validationErrors);
 

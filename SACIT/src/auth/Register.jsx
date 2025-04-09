@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useEmailValidation from '../hooks/useEmailValidation';
+import usePasswordValidation from '../hooks/usePasswordValidation';
+import useConfirmPasswordValidation from '../hooks/useConfirmPasswordValidation';
+import useTextFieldValidation from '../hooks/useTextFieldValidation';
 import { register } from '../config/http-client/authService';
 import Swal from 'sweetalert2';
+import DOMPurify from 'dompurify';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -10,7 +14,10 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const { validateEmail } = useEmailValidation();
+  const validateEmail = useEmailValidation();
+  const validatePassword = usePasswordValidation();
+  const [confirmPasswordError, validateConfirmPassword] = useConfirmPasswordValidation(password);
+  const validateTextField = useTextFieldValidation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -25,37 +32,35 @@ const Register = () => {
   const validateField = (name, value) => {
     let error = '';
 
-    if (name === 'name' && value.trim() === '') {
-      error = 'El nombre es obligatorio';
+    if (name === 'name') {
+      error = validateTextField(value);
     }
 
-    if (name === 'lastName' && value.trim() === '') {
-      error = 'El apellido es obligatorio';
+    if (name === 'lastName') {
+      error = validateTextField(value);
     }
 
     if (name === 'email') {
       if (value.trim() === '') {
         error = 'El correo es obligatorio';
       } else {
-        const emailErrors = validateEmail(value);
-        if (emailErrors.email) error = emailErrors.email;
+        const emailError = validateEmail(value);
+        if (emailError) error = emailError;
       }
     }
 
     if (name === 'password') {
       if (value.trim() === '') {
         error = 'La contraseña es obligatoria';
-      } else if (value.length < 8) {
-        error = 'La contraseña debe tener al menos 8 caracteres';
+      } else {
+        const passwordError = validatePassword(value);
+        if (passwordError) error = passwordError;
       }
     }
 
     if (name === 'confirmPassword') {
-      if (value.trim() === '') {
-        error = 'La confirmación de contraseña es obligatoria';
-      } else if (value !== password) {
-        error = 'Las contraseñas no coinciden';
-      }
+      validateConfirmPassword(value);
+      error = confirmPasswordError;
     }
 
     setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
@@ -63,34 +68,41 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-
+  
+    const sanitizedName = DOMPurify.sanitize(name);
+    const sanitizedLastName = DOMPurify.sanitize(lastName);
+    const sanitizedEmail = DOMPurify.sanitize(email);
+    const sanitizedPassword = DOMPurify.sanitize(password);
+    const sanitizedConfirmPassword = DOMPurify.sanitize(confirmPassword);
+  
     let validationErrors = {
-      name: name.trim() === '' ? 'El nombre es obligatorio' : '',
-      lastName: lastName.trim() === '' ? 'El apellido es obligatorio' : '',
-      email: email.trim() === '' ? 'El correo es obligatorio' : validateEmail(email).email || '',
-      password: password.trim() === '' ? 'La contraseña es obligatoria' : 
-                password.length < 6 ? 'La contraseña debe tener al menos 6 caracteres' : '',      
-      confirmPassword:
-        confirmPassword.trim() === ''
-          ? 'La confirmación de contraseña es obligatoria'
-          : confirmPassword !== password
-          ? 'Las contraseñas no coinciden'
-          : '',
+      name: sanitizedName.trim() === '' ? 'El nombre es obligatorio' : '',
+      lastName: sanitizedLastName.trim() === '' ? 'El apellido es obligatorio' : '',
+      email: sanitizedEmail.trim() === '' ? 'El correo es obligatorio' : validateEmail(sanitizedEmail),
+      password: sanitizedPassword.trim() === '' ? 'La contraseña es obligatoria' : validatePassword(sanitizedPassword),
+      confirmPassword: sanitizedConfirmPassword.trim() === '' ? 'La confirmación de la contraseña es obligatoria' : confirmPasswordError,
     };
-
+  
     setErrors(validationErrors);
-
-    if (Object.values(validationErrors).every((err) => err === '')) {
+  
+    if (Object.values(validationErrors).some((err) => err !== '')) {
+      Swal.fire({
+        title: '¡Error!',
+        text: 'Por favor, corrige los errores en el formulario.',
+        icon: 'error',
+        confirmButtonText: 'Aceptar'
+      });
+    } else {
       setIsLoading(true);
-      
+  
       try {
         await register({
-          name,
-          lastName,
-          email,
-          password
+          name: sanitizedName,
+          lastName: sanitizedLastName,
+          email: sanitizedEmail,
+          password: sanitizedPassword
         });
-        
+  
         Swal.fire({
           title: 'Registro exitoso',
           text: 'Tu cuenta ha sido creada correctamente',
@@ -106,13 +118,13 @@ const Register = () => {
       }
     }
   };
+  
 
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100">
       <div className="w-100" style={{ maxWidth: '400px' }}>
         <div className="card p-4 shadow">
           <h2 className="text-center mb-4">Registrarse</h2>
-
           <form onSubmit={handleRegister}>
             <div className="mb-3">
               <label htmlFor="name" className="form-label">Nombre(s)</label>
@@ -125,7 +137,7 @@ const Register = () => {
                 onChange={(e) => setName(e.target.value)}
                 onBlur={(e) => validateField('name', e.target.value)}
               />
-              {errors.firstName && <div className="invalid-feedback">{errors.name}</div>}
+              {errors.name && <div className="invalid-feedback">{errors.name}</div>}
             </div>
 
             <div className="mb-3">
