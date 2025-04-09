@@ -1,24 +1,15 @@
-import { useState } from 'react';
+import useValidation from './useValidation';
 
 const useEmailValidation = () => {
-  const [errors, setErrors] = useState({});
   const emailRegex = /^[a-zA-Z0-9]+([._%+-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)+$/;
-
-  const validateEmail = (email) => {
-    const newErrors = {};
-
-    if (!email) {
-      newErrors.email = 'El correo es obligatorio.';
-    } else if (!emailRegex.test(email)) {
-      newErrors.email = 'El correo no es válido.';
-    }
-
-    setErrors(newErrors);
-
-    return newErrors;
+  const customMessages = {
+    required: 'El correo electrónico es obligatorio.',
+    scriptInjection: 'El correo electrónico no puede contener código HTML o JavaScript.',
+    invalid: 'El correo electrónico no es válido.',
   };
 
-  return { errors, validateEmail };
+  const { validate } = useValidation('Correo', emailRegex, customMessages);
+  return validate;
 };
 
 export default useEmailValidation;
