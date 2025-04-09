@@ -35,11 +35,11 @@ const Login = () => {
     e.preventDefault();
 
     const sanitizedEmail = DOMPurify.sanitize(email);
-    const sanitizedPassword = DOMPurify.sanitize(password);
+    const sanitizedPassword = password;
 
     let validationErrors = {
       email: sanitizedEmail.trim() === '' ? 'El correo es obligatorio' : validateEmail(sanitizedEmail),
-      password : password.trim() === '' ? 'La contraseña es obligatoria' : ''
+      password : sanitizedPassword.trim() === '' ? 'La contraseña es obligatoria' : ''
     };
 
     setErrors(validationErrors);

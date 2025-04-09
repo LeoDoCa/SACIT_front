@@ -6,6 +6,10 @@ import AlertTitle from '@mui/material/AlertTitle';
 import { Eye, EyeOff, AlertTriangle } from 'react-feather';
 import styles from '../assets/css/auth/reset-password.module.css';
 
+import usePasswordValidation from '../hooks/usePasswordValidation.jsx';
+import useConfirmPasswordValidation from '../hooks/useConfirmPasswordValidation.jsx';
+import DOMPurify from 'dompurify';
+
 const ResetPasswordForm = () => {
   const { token } = useParams();
   const navigate = useNavigate();
@@ -19,6 +23,9 @@ const ResetPasswordForm = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const validatePassword = usePasswordValidation();
+  const [confirmPasswordError, validateConfirmPassword] = useConfirmPasswordValidation(formData.password);
 
   useEffect(() => {
     checkTokenValidity();
@@ -41,51 +48,41 @@ const ResetPasswordForm = () => {
     }
   };
 
+  
   const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.password.trim()) {
-      newErrors.password = 'La contraseña es obligatoria';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'La contraseña debe tener al menos 8 caracteres';
-    }
-
-    if (!formData.confirmPassword.trim()) {
-      newErrors.confirmPassword = 'Confirma tu contraseña';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Las contraseñas no coinciden';
-    }
-
+    const sanitizedPassword = DOMPurify.sanitize(formData.password);
+    const sanitizedConfirmPassword = DOMPurify.sanitize(formData.confirmPassword);
+  
+    const passwordError = sanitizedPassword.trim() === ''
+      ? 'La contraseña es obligatoria'
+      : validatePassword(sanitizedPassword);
+  
+    const confirmPasswordError = sanitizedConfirmPassword.trim() === ''
+      ? 'La confirmación de la contraseña es obligatoria'
+      : sanitizedConfirmPassword !== sanitizedPassword
+        ? 'Las contraseñas no coinciden'
+        : '';
+  
+    const newErrors = {
+      password: passwordError,
+      confirmPassword: confirmPasswordError,
+    };
+  
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  
+    return !Object.values(newErrors).some(error => error !== '');
   };
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    
-    if (name === 'password' && value.trim() !== '') {
-      if (value.length < 8) {
-        setErrors(prev => ({ ...prev, password: 'La contraseña debe tener al menos 8 caracteres' }));
-      } else {
-        setErrors(prev => ({ ...prev, password: '' }));
-      }
-      
-      if (formData.confirmPassword && value !== formData.confirmPassword) {
-        setErrors(prev => ({ ...prev, confirmPassword: 'Las contraseñas no coinciden' }));
-      } else if (formData.confirmPassword) {
-        setErrors(prev => ({ ...prev, confirmPassword: '' }));
-      }
-    }
-    
-    if (name === 'confirmPassword') {
-      if (value !== formData.password) {
-        setErrors(prev => ({ ...prev, confirmPassword: 'Las contraseñas no coinciden' }));
-      } else {
-        setErrors(prev => ({ ...prev, confirmPassword: '' }));
-      }
+
+    if (name === 'password' || name === 'confirmPassword') {
+      validateForm();
     }
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -93,7 +90,7 @@ const ResetPasswordForm = () => {
     if (!validateForm()) return;
     
     try {
-      await resetPassword(token, formData.password);
+      await resetPassword(token, DOMPurify.sanitize(formData.password));
       
       setAlert({
         open: true,
@@ -193,6 +190,7 @@ const ResetPasswordForm = () => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Ingresa tu nueva contraseña"
+                  onBlur={validateForm}
                 />
                 <button 
                   type="button" 
@@ -206,7 +204,7 @@ const ResetPasswordForm = () => {
                 )}
               </div>
             </div>
-            
+
             <div className="mb-4">
               <label htmlFor="confirmPassword" className="form-label">Confirmar contraseña</label>
               <div className="input-group">
@@ -218,6 +216,7 @@ const ResetPasswordForm = () => {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="Confirma tu nueva contraseña"
+                  onBlur={validateForm}
                 />
                 <button 
                   type="button" 
@@ -231,7 +230,7 @@ const ResetPasswordForm = () => {
                 )}
               </div>
             </div>
-            
+
             <button 
               type="submit" 
               className={`btn btn-primary w-100 py-2 ${styles['submit-btn']}`}
