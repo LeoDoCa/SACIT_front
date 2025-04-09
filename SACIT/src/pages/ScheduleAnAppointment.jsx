@@ -1,11 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, memo } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, Row, Col, Card, Button, Form, ProgressBar } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Form, ProgressBar, Modal } from 'react-bootstrap';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import esLocale from '@fullcalendar/core/locales/es';
+import * as Yup from 'yup';
+import EmailModal from '../components/EmailModa';
+import Swal from 'sweetalert2';
 
 const AgendarCita = () => {
     const calendarRef = useRef(null);
@@ -17,6 +20,12 @@ const AgendarCita = () => {
     const [recetaMedica, setRecetaMedica] = useState(null);
 
     const [currentStep, setCurrentStep] = useState(1);
+
+    const [showEmailModal, setShowEmailModal] = useState(false);
+    const [email, setEmail] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [emailTouched, setEmailTouched] = useState(false);
 
     const [scheduledAppointments, setScheduledAppointments] = useState([
         { date: '2025-04-07', time: '09:00', duration: 30 },
@@ -42,6 +51,103 @@ const AgendarCita = () => {
         { date: '2025-04-18', time: '14:00', duration: 45 },
     ]);
 
+    const isUserLoggedIn = () => {
+        return false;
+    };
+
+    const emailSchema = Yup.object().shape({
+        email: Yup.string()
+            .required('El correo electrónico es obligatorio')
+            .email('Por favor, introduce un correo electrónico válido')
+            .matches(
+                /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                'El formato del correo electrónico no es válido'
+            )
+            .test(
+                'no-consecutive-dots',
+                'El correo no puede contener puntos consecutivos',
+                value => !(value && value.includes('..'))
+            )
+            .test(
+                'no-consecutive-at',
+                'El correo no puede contener @ consecutivos',
+                value => !(value && value.includes('@@'))
+            )
+            .test(
+                'domain-check',
+                'El dominio del correo debe tener al menos un punto',
+                value => {
+                    if (!value) return true;
+                    const parts = value.split('@');
+                    return parts.length > 1 && parts[1].includes('.');
+                }
+            )
+            .test(
+                'tld-length',
+                'La extensión del dominio debe tener entre 2 y 6 caracteres',
+                value => {
+                    if (!value) return true;
+                    const parts = value.split('@');
+                    if (parts.length <= 1) return true;
+                    const domainParts = parts[1].split('.');
+                    const tld = domainParts[domainParts.length - 1];
+                    return tld.length >= 2 && tld.length <= 6;
+                }
+            )
+            .test(
+                'no-space',
+                'El correo no puede contener espacios',
+                value => !(value && value.includes(' '))
+            )
+            .test(
+                'max-length',
+                'El correo no puede exceder los 320 caracteres',
+                value => !(value && value.length > 320)
+            )
+            .test(
+                'valid-local-part',
+                'La parte local del correo no es válida',
+                value => {
+                    if (!value) return true;
+                    const parts = value.split('@');
+                    return parts.length > 0 && parts[0].length > 0 && parts[0].length <= 64;
+                }
+            )
+            .test(
+                'valid-domain-part',
+                'El dominio del correo no es válido',
+                value => {
+                    if (!value) return true;
+                    const parts = value.split('@');
+                    return parts.length > 1 && parts[1].length > 0 && parts[1].length <= 255;
+                }
+            )
+            .test(
+                'no-special-chars-at-ends',
+                'El correo no puede comenzar o terminar con caracteres especiales en la parte local',
+                value => {
+                    if (!value) return true;
+                    const parts = value.split('@');
+                    if (parts.length <= 0) return true;
+                    const localPart = parts[0];
+                    return !/^[._-]|[._-]$/.test(localPart);
+                }
+            )
+    });
+
+    const validateEmail = async () => {
+        try {
+            await emailSchema.validate({ email });
+            setEmailError('');
+            return true;
+        } catch (err) {
+            console.error("validateEmail: error de validación:", err.message);
+            setEmailError(err.message);
+            return false;
+        }
+    };
+
+
     const handleDateClick = (info) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -52,7 +158,12 @@ const AgendarCita = () => {
         const selectedTime = selectedDateObj.getTime();
 
         if (selectedTime < todayTime) {
-            alert('No puedes seleccionar días anteriores al actual.');
+            Swal.fire({
+                title: 'Fecha no válida',
+                text: 'No puedes seleccionar días anteriores al actual.',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+            });
             return;
         }
 
@@ -60,7 +171,12 @@ const AgendarCita = () => {
         maxDate.setDate(maxDate.getDate() + 30);
 
         if (selectedDateObj > maxDate) {
-            alert('Por favor selecciona una fecha válida (entre hoy y los próximos 30 días).');
+            Swal.fire({
+                title: 'Fecha fuera de rango',
+                text: 'Por favor selecciona una fecha válida (entre hoy y los próximos 30 días).',
+                icon: 'warning',
+                confirmButtonText: 'Entendido'
+            });
             return;
         }
 
@@ -136,7 +252,13 @@ const AgendarCita = () => {
         const selectedDateTime = new Date(`${selectedDate}T${selectedTime}`);
 
         if (selectedDateTime < today) {
-            alert('Por favor selecciona una hora válida.');
+            // Reemplazar alert por SweetAlert2
+            Swal.fire({
+                title: 'Hora no válida',
+                text: 'Por favor selecciona una hora válida.',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+            });
             return;
         }
 
@@ -157,12 +279,49 @@ const AgendarCita = () => {
     };
 
     const handleConfirmar = () => {
-        console.log('Cita confirmada para:', selectedDate, selectedTime);
-        console.log('Archivos adjuntos:', identificacion, recetaMedica);
+        if (!isUserLoggedIn()) {
+            setEmail('');
+            setEmailError('');
+            setEmailTouched(false);
+            setShowEmailModal(true);
+            return;
+        }
 
-        alert(`Cita agendada con éxito para el ${formatDate(selectedDate)} a las ${selectedTime}`);
+        finishAppointmentBooking();
+    };
+
+    const handleEmailSubmit = async (e) => {
+        e.preventDefault();
+
+        setIsSubmitting(true);
+
+        const isValid = await validateEmail();
+
+        if (isValid) {
+            setTimeout(() => {
+                setIsSubmitting(false);
+                setShowEmailModal(false);
+                finishAppointmentBooking();
+            }, 1000);
+        } else {
+            setIsSubmitting(false);
+        }
+    };
+
+    const finishAppointmentBooking = () => {
+        if (email) {
+            Swal.fire({
+                title: '¡Éxito!',
+                text: `Cita agendada con éxito para el ${formatDate(selectedDate)} a las ${selectedTime}`,
+                icon: 'success',
+                confirmButtonText: 'Aceptar'
+            });
+        }
 
         handleCancelar();
+        setEmail('');
+        setEmailError('');
+        setEmailTouched(false);
     };
 
     const formatDate = (dateStr) => {
@@ -180,8 +339,43 @@ const AgendarCita = () => {
 
     const handleFileChange = (e, setFile) => {
         if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0]);
+            const file = e.target.files[0];
+
+            if (file.type !== 'application/pdf') {
+                Swal.fire({
+                    title: 'Formato incorrecto',
+                    text: 'Solo se permiten archivos en formato PDF.',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                e.target.value = '';
+                return;
+            }
+
+            const maxSizeInBytes = 0.5 * 1024 * 1024;
+            if (file.size > maxSizeInBytes) {
+                Swal.fire({
+                    title: 'Archivo demasiado grande',
+                    text: 'El archivo debe pesar 0.5 MB o menos.',
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido'
+                });
+                e.target.value = '';
+                return;
+            }
+
+            setFile(file);
         }
+    };
+
+
+    const handleEmailChange = (e) => {
+        setEmail(e.target.value);
+    };
+
+    const handleEmailBlur = () => {
+        setEmailTouched(true);
+        validateEmail();
     };
 
     const StepProgressBar = () => {
@@ -231,9 +425,9 @@ const AgendarCita = () => {
                                     week: 'Semana',
                                 }}
                                 validRange={{
-                                    start: new Date(), 
+                                    start: new Date(),
                                 }}
-                                hiddenDays={[0, 6]} 
+                                hiddenDays={[0, 6]}
                             />
                         </Card.Body>
                     </Card>
@@ -305,8 +499,13 @@ const AgendarCita = () => {
                                         onChange={(e) => handleFileChange(e, setIdentificacion)}
                                     />
                                     <Form.Text className="text-muted">
-                                        Sube una copia de tu identificación oficial.
+                                        Sube una copia de tu identificación oficial en formato PDF (máximo 0.5 MB).
                                     </Form.Text>
+                                    {identificacion && (
+                                        <p className="mt-2 text-success">
+                                            Archivo subido: <strong>{identificacion.name}</strong>
+                                        </p>
+                                    )}
                                 </Form.Group>
 
                                 <Form.Group className="mb-4">
@@ -316,8 +515,13 @@ const AgendarCita = () => {
                                         onChange={(e) => handleFileChange(e, setRecetaMedica)}
                                     />
                                     <Form.Text className="text-muted">
-                                        Sube tu receta médica si aplica.
+                                        Sube tu receta médica en formato PDF (máximo 0.5 MB).
                                     </Form.Text>
+                                    {recetaMedica && (
+                                        <p className="mt-2 text-success">
+                                            Archivo subido: <strong>{recetaMedica.name}</strong>
+                                        </p>
+                                    )}
                                 </Form.Group>
 
                                 <div className="d-flex justify-content-between mt-4">
@@ -420,6 +624,19 @@ const AgendarCita = () => {
                 {currentStep === 1 && <Step1 />}
                 {currentStep === 2 && <Step2 />}
                 {currentStep === 3 && <Step3 />}
+
+                <EmailModal
+                    showEmailModal={showEmailModal}
+                    setShowEmailModal={setShowEmailModal}
+                    email={email}
+                    setEmail={setEmail}
+                    emailError={emailError}
+                    emailTouched={emailTouched}
+                    isSubmitting={isSubmitting}
+                    handleEmailChange={handleEmailChange}
+                    handleEmailBlur={handleEmailBlur}
+                    handleEmailSubmit={handleEmailSubmit}
+                />
             </div>
         </Container>
     );
