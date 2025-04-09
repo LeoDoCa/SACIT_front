@@ -7,7 +7,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import esLocale from '@fullcalendar/core/locales/es';
 import * as Yup from 'yup';
-import EmailModal from '../components/EmailModa';
+import EmailModal from '../components/EmailModal';
 import Swal from 'sweetalert2';
 
 const AgendarCita = () => {
