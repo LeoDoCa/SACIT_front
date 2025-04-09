@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { FaUser, FaHistory, FaSignOutAlt, FaBars, FaTimes, FaUserPlus } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import AuthContext from '../config/context/auth-context';
+import { logout } from '../config/http-client/authService';
 import Swal from "sweetalert2";
 
 const Sidebar = () => {
@@ -36,30 +37,39 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     Swal.fire({
-        title: "¿Deseas cerrar sesión?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, cerrar sesión',
-        cancelButtonText: 'Cancelar',
-        reverseButtons: true,
-        confirmButtonColor: '#002E5D',
-        iconColor: '#c9dae1'
+      title: "¿Deseas cerrar sesión?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cerrar sesión',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      confirmButtonColor: '#002E5D',
+      iconColor: '#c9dae1'
     }).then((result) => {
-        if (result.isConfirmed) {
-            localStorage.removeItem('user');
-            localStorage.removeItem('accessToken');
-
-            dispatch({ type: 'SIGNOUT' })
+      if (result.isConfirmed) {
+        logout()
+          .then(() => {
+            dispatch({ type: 'SIGNOUT' }); 
             navigate('/login', { replace: true });
             Swal.fire({
-                title: '¡Sesión cerrada!',
-                text: 'Has cerrado sesión correctamente',
-                icon: 'success',
-                confirmButtonColor: '#002E5D'
+              title: '¡Sesión cerrada!',
+              text: 'Has cerrado sesión correctamente',
+              icon: 'success',
+              confirmButtonColor: '#002E5D'
             });
-        }
-    })
-};
+          })
+          .catch(error => {
+            console.error('Error al cerrar sesión:', error);
+            Swal.fire({
+              title: 'Error',
+              text: 'Hubo un problema al intentar cerrar sesión. Intenta más tarde.',
+              icon: 'error',
+              confirmButtonColor: '#d33'
+            });
+          });
+      }
+    });
+  };
 
   return (
     <>
