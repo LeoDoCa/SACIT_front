@@ -9,6 +9,7 @@ import esLocale from '@fullcalendar/core/locales/es';
 import * as Yup from 'yup';
 import EmailModal from '../components/EmailModal';
 import Swal from 'sweetalert2';
+import BackToHomeButton from '../components/BackToHomeButton';
 
 const AgendarCita = () => {
     const calendarRef = useRef(null);
@@ -279,7 +280,11 @@ const AgendarCita = () => {
     };
 
     const handleConfirmar = () => {
-        if (!isUserLoggedIn()) {
+        const accessToken = localStorage.getItem('accessToken'); // Obtener el token desde localStorage
+        const isLoggedIn = !!accessToken; // Verifica si hay un token activo
+
+        if (!isLoggedIn) {
+            // Si no hay sesión, muestra el modal de email
             setEmail('');
             setEmailError('');
             setEmailTouched(false);
@@ -287,6 +292,8 @@ const AgendarCita = () => {
             return;
         }
 
+        // Si hay sesión, continúa con el flujo normal
+        console.log("Usuario logueado, confirmando cita...");
         finishAppointmentBooking();
     };
 
@@ -298,26 +305,28 @@ const AgendarCita = () => {
         const isValid = await validateEmail();
 
         if (isValid) {
+            console.log("Email válido, cerrando modal y confirmando cita...");
             setTimeout(() => {
                 setIsSubmitting(false);
                 setShowEmailModal(false);
-                finishAppointmentBooking();
+                finishAppointmentBooking(); // Llama a la función para confirmar la cita
             }, 1000);
         } else {
+            console.log("Email inválido, mostrando error...");
             setIsSubmitting(false);
         }
     };
 
     const finishAppointmentBooking = () => {
-        if (email) {
-            Swal.fire({
-                title: '¡Éxito!',
-                text: `Cita agendada con éxito para el ${formatDate(selectedDate)} a las ${selectedTime}`,
-                icon: 'success',
-                confirmButtonText: 'Aceptar'
-            });
-        }
+        console.log("finishAppointmentBooking: ejecutando confirmación de cita...");
+        Swal.fire({
+            title: '¡Éxito!',
+            text: `Cita agendada con éxito para el ${formatDate(selectedDate)} a las ${selectedTime}`,
+            icon: 'success',
+            confirmButtonText: 'Aceptar'
+        });
 
+        // Reinicia el estado después de confirmar la cita
         handleCancelar();
         setEmail('');
         setEmailError('');
@@ -499,7 +508,7 @@ const AgendarCita = () => {
                                         onChange={(e) => handleFileChange(e, setIdentificacion)}
                                     />
                                     <Form.Text className="text-muted">
-                                        Sube una copia de tu identificación oficial en formato PDF (máximo 0.5 MB).
+                                        Sube tu arhivo oficial en formato PDF (máximo 0.5 MB).
                                     </Form.Text>
                                     {identificacion && (
                                         <p className="mt-2 text-success">
@@ -515,7 +524,7 @@ const AgendarCita = () => {
                                         onChange={(e) => handleFileChange(e, setRecetaMedica)}
                                     />
                                     <Form.Text className="text-muted">
-                                        Sube tu receta médica en formato PDF (máximo 0.5 MB).
+                                        Sube tu arhivo oficial en formato PDF (máximo 0.5 MB).
                                     </Form.Text>
                                     {recetaMedica && (
                                         <p className="mt-2 text-success">
@@ -617,6 +626,8 @@ const AgendarCita = () => {
     return (
         <Container fluid className="p-0 d-flex" style={{ minHeight: '100vh' }}>
             <div className="flex-grow-1 p-4">
+                <BackToHomeButton />
+
                 <h2 className="mb-4">Agendar Cita</h2>
 
                 <StepProgressBar />
@@ -637,6 +648,7 @@ const AgendarCita = () => {
                     handleEmailBlur={handleEmailBlur}
                     handleEmailSubmit={handleEmailSubmit}
                 />
+
             </div>
         </Container>
     );
