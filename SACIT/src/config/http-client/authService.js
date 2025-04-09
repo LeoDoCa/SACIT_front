@@ -14,9 +14,28 @@ export const login = async (email, password) => {
   }
 };
 
-export const logout = () => {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("user"); 
+export const logout = async () => {
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      throw new Error("No se encontró un token de acceso.");
+    }
+
+    await AxiosClient.post("/logout", {}, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+
+    return true; 
+  } catch (error) {
+    console.error("Error al cerrar sesión:", error);
+    throw error.response?.data?.message || "Hubo un problema al cerrar sesión.";
+  }
 };
 
 export const register = async (userData) => {
