@@ -266,6 +266,11 @@ const AgendarCita = () => {
     };
 
     const handleBack = () => {
+        if (currentStep === 2) {
+            // Si el usuario regresa al paso 1, limpia los archivos subidos
+            setIdentificacion(null);
+            setRecetaMedica(null);
+        }
         setCurrentStep(currentStep - 1);
     };
 
@@ -306,7 +311,7 @@ const AgendarCita = () => {
             setTimeout(() => {
                 setIsSubmitting(false);
                 setShowEmailModal(false);
-                finishAppointmentBooking(); 
+                finishAppointmentBooking();
             }, 1000);
         } else {
             console.log("Email inválido, mostrando error...");
@@ -504,7 +509,7 @@ const AgendarCita = () => {
                                         onChange={(e) => handleFileChange(e, setIdentificacion)}
                                     />
                                     <Form.Text className="text-muted">
-                                        Sube tu arhivo oficial en formato PDF (máximo 0.5 MB).
+                                        Sube tu archivo oficial en formato PDF (máximo 0.5 MB).
                                     </Form.Text>
                                     {identificacion && (
                                         <p className="mt-2 text-success">
@@ -520,7 +525,7 @@ const AgendarCita = () => {
                                         onChange={(e) => handleFileChange(e, setRecetaMedica)}
                                     />
                                     <Form.Text className="text-muted">
-                                        Sube tu arhivo oficial en formato PDF (máximo 0.5 MB).
+                                        Sube tu archivo oficial en formato PDF (máximo 0.5 MB).
                                     </Form.Text>
                                     {recetaMedica && (
                                         <p className="mt-2 text-success">
@@ -547,7 +552,7 @@ const AgendarCita = () => {
                                         <Button
                                             variant="primary"
                                             onClick={handleNext}
-                                            disabled={!identificacion}
+                                            disabled={!identificacion || !recetaMedica} // Validación para habilitar el botón
                                         >
                                             Siguiente
                                         </Button>
