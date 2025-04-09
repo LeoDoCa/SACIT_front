@@ -6,7 +6,7 @@ const BackToHomeButton = () => {
     const navigate = useNavigate();
 
     const handleGoHome = () => {
-        navigate('/'); // Redirige a la página principal
+        navigate('/'); 
     };
 
     return (
@@ -21,7 +21,7 @@ const BackToHomeButton = () => {
                 fontSize: '16px',
             }}
         >
-            <i className="bi bi-house-door-fill"></i> {/* Ícono de Bootstrap */}
+            <i className="bi bi-house-door-fill"></i>
             Volver a Inicio
         </Button>
     );

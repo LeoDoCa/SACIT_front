@@ -253,7 +253,6 @@ const AgendarCita = () => {
         const selectedDateTime = new Date(`${selectedDate}T${selectedTime}`);
 
         if (selectedDateTime < today) {
-            // Reemplazar alert por SweetAlert2
             Swal.fire({
                 title: 'Hora no válida',
                 text: 'Por favor selecciona una hora válida.',
@@ -280,11 +279,10 @@ const AgendarCita = () => {
     };
 
     const handleConfirmar = () => {
-        const accessToken = localStorage.getItem('accessToken'); // Obtener el token desde localStorage
-        const isLoggedIn = !!accessToken; // Verifica si hay un token activo
+        const accessToken = localStorage.getItem('accessToken');
+        const isLoggedIn = !!accessToken;
 
         if (!isLoggedIn) {
-            // Si no hay sesión, muestra el modal de email
             setEmail('');
             setEmailError('');
             setEmailTouched(false);
@@ -292,7 +290,6 @@ const AgendarCita = () => {
             return;
         }
 
-        // Si hay sesión, continúa con el flujo normal
         console.log("Usuario logueado, confirmando cita...");
         finishAppointmentBooking();
     };
@@ -309,7 +306,7 @@ const AgendarCita = () => {
             setTimeout(() => {
                 setIsSubmitting(false);
                 setShowEmailModal(false);
-                finishAppointmentBooking(); // Llama a la función para confirmar la cita
+                finishAppointmentBooking(); 
             }, 1000);
         } else {
             console.log("Email inválido, mostrando error...");
@@ -326,7 +323,6 @@ const AgendarCita = () => {
             confirmButtonText: 'Aceptar'
         });
 
-        // Reinicia el estado después de confirmar la cita
         handleCancelar();
         setEmail('');
         setEmailError('');
