@@ -5,10 +5,11 @@ import { requestPasswordReset } from '../config/http-client/authService.js';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import { AlertCircle, Mail } from 'react-feather';
+import DOMPurify from 'dompurify';
 
 const ResetPassword = () => {
   const [email, setEmail] = useState('');
-  const { validateEmail } = useEmailValidation();
+  const validateEmail = useEmailValidation();
   const [errors, setErrors] = useState({ email: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [alert, setAlert] = useState({ open: false, severity: '', message: '', title: '' });
@@ -20,8 +21,7 @@ const ResetPassword = () => {
       if (value.trim() === '') {
         error = 'El correo es obligatorio';
       } else {
-        const emailErrors = validateEmail(value);
-        if (emailErrors.email) error = emailErrors.email;
+        error = validateEmail(value) || '';
       }
     }
     setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
@@ -30,21 +30,25 @@ const ResetPassword = () => {
   const handleResetPassword = async (e) => {
     e.preventDefault();
 
-    let validationErrors = {};
-    validationErrors.email = email.trim() === '' ? 'El correo es obligatorio' : validateEmail(email).email || '';
+    const sanitizedEmail = DOMPurify.sanitize(email);
+
+    let validationErrors = {
+      email: sanitizedEmail.trim() === '' ? 'El correo es obligatorio' : validateEmail(sanitizedEmail) || ''
+    };
+
     setErrors(validationErrors);
 
     if (!validationErrors.email) {
       setIsSubmitting(true);
       try {
-        await requestPasswordReset(email);
+        await requestPasswordReset(sanitizedEmail);
         setAlert({
           open: true,
           severity: 'success',
           title: 'Solicitud enviada',
           message: 'Hemos enviado un correo electrónico con instrucciones para restablecer tu contraseña. Por favor, revisa tu bandeja de entrada.'
         });
-        
+
         setTimeout(() => {
           navigate('/login');
         }, 5000);

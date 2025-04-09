@@ -7,6 +7,7 @@ import useTextFieldValidation from './../hooks/useTextFieldValidation.jsx';
 import useDescriptionValidation from '../hooks/useDescriptionValidation.jsx';
 import useCostFieldValidation from '../hooks/useCostFieldValidation.jsx';
 import DOMPurify from 'dompurify';
+import Swal from 'sweetalert2';
 
 const AddProcedure = () => {
   const [formData, setFormData] = useState({
@@ -106,6 +107,28 @@ const AddProcedure = () => {
       alert('Trámite guardado exitosamente');
     }
   };
+
+  const handleCancel = () => {
+          Swal.fire({
+              title: '¿Estás seguro?',
+              text: 'Se cancelarán todos los cambios realizados.',
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Sí, cancelar',
+              cancelButtonText: 'No, volver'
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  setFormData({
+                    nombre: '',
+                    descripcion: '',
+                    costo: '',
+                    fechas: [''],
+                    documentos: ['']
+                    });
+                    setErrors({});
+              }
+          });
+      };
 
   return (
     <Container fluid className="p-0 d-flex" style={{ minHeight: '100vh' }}>
@@ -246,16 +269,7 @@ const AddProcedure = () => {
             <Button
                 variant="secondary"
                 className="me-2"
-                onClick={() => {
-                    setFormData({
-                    nombre: '',
-                    descripcion: '',
-                    costo: '',
-                    fechas: [''],
-                    documentos: ['']
-                    });
-                    setErrors({});
-                }}
+                onClick={handleCancel}
                 >
                 Cancelar
                 </Button>

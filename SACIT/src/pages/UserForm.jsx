@@ -1,186 +1,279 @@
 import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { useNavigate } from 'react-router-dom';
+import useEmailValidation from '../hooks/useEmailValidation.jsx';
+import usePasswordValidation from '../hooks/usePasswordValidation.jsx';
+import useConfirmPasswordValidation from '../hooks/useConfirmPasswordValidation.jsx';
+import useTextFieldValidation from '../hooks/useTextFieldValidation.jsx';
+import { register } from '../config/http-client/authService';
+import Swal from 'sweetalert2';
+import DOMPurify from 'dompurify';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import Sidebar from '../components/Sidebar.jsx';
 
 const RegisterUser = () => {
-    const [formData, setFormData] = useState({
-        nombre: '',
-        apellidos: '',
-        correo: '',
-        rol: 'ventanilla',
-        contrasena: '',
-        confirmarContrasena: ''
-    });
+  const [formData, setFormData] = useState({
+    nombre: '',
+    apellidos: '',
+    correo: '',
+    rol: 'ventanilla',
+    contrasena: '',
+    confirmarContrasena: '',
+  });
 
-    const [validated, setValidated] = useState(false);
-    const [passwordMatch, setPasswordMatch] = useState(true);
+  const [errors, setErrors] = useState({
+    nombre: '',
+    apellidos: '',
+    correo: '',
+    rol: '',
+    contrasena: '',
+    confirmarContrasena: '',
+  });
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+  const validateEmail = useEmailValidation();
+  const validatePassword = usePasswordValidation();
+  const [confirmPasswordError, validateConfirmPassword] = useConfirmPasswordValidation(formData.contrasena);
+  const validateTextField = useTextFieldValidation();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
-        if (name === 'contrasena' || name === 'confirmarContrasena') {
-            const otherField = name === 'contrasena' ? 'confirmarContrasena' : 'contrasena';
-            setPasswordMatch(value === formData[otherField] || value === '' || formData[otherField] === '');
-        }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    if (name === 'contrasena' || name === 'confirmarContrasena') {
+      const otherField = name === 'contrasena' ? 'confirmarContrasena' : 'contrasena';
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        confirmarContrasena: formData[otherField] !== value ? 'Las contraseñas no coinciden.' : '',
+      }));
+    }
+  };
+
+  const validateField = (name, value) => {
+    let error = '';
+
+    if (name === 'nombre' || name === 'apellidos') {
+      error = validateTextField(value);
+    }
+
+    if (name === 'correo') {
+      error = validateEmail(value);
+    }
+
+    if (name === 'contrasena') {
+      error = validatePassword(value);
+    }
+
+    if (name === 'confirmarContrasena') {
+      validateConfirmPassword(value);
+      error = confirmPasswordError;
+    }
+
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const sanitizedData = {
+      nombre: DOMPurify.sanitize(formData.nombre),
+      apellidos: DOMPurify.sanitize(formData.apellidos),
+      correo: DOMPurify.sanitize(formData.correo),
+      rol: DOMPurify.sanitize(formData.rol),
+      contrasena: DOMPurify.sanitize(formData.contrasena),
+      confirmarContrasena: DOMPurify.sanitize(formData.confirmarContrasena),
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const form = e.currentTarget;
-
-        if (formData.contrasena !== formData.confirmarContrasena) {
-            setPasswordMatch(false);
-            e.stopPropagation();
-            return;
-        }
-
-        if (form.checkValidity() === false) {
-            e.stopPropagation();
-        } else {
-            console.log('Datos del usuario:', formData);
-
-        }
-
-        setValidated(true);
+    let validationErrors = {
+      nombre: sanitizedData.nombre.trim() === '' ? 'El nombre es obligatorio' : '',
+      apellidos: sanitizedData.apellidos.trim() === '' ? 'El apellido es obligatorio' : '',
+      correo: sanitizedData.correo.trim() === '' ? 'El correo es obligatorio' : validateEmail(sanitizedData.correo),
+      rol: sanitizedData.rol.trim() === '' ? 'El rol es obligatorio' : '',
+      contrasena: sanitizedData.contrasena.trim() === '' ? 'La contraseña es obligatoria' : validatePassword(sanitizedData.contrasena),
+      confirmarContrasena: sanitizedData.confirmarContrasena.trim() === '' ? 'La confirmación de la contraseña es obligatoria' : confirmPasswordError,
     };
 
-    return (
-        <Container fluid className="p-0 d-flex" style={{ minHeight: '100vh' }}>
-            <div style={{ width: '200px', backgroundColor: '#003366', color: 'white', position: 'sticky', top: 0, height: '100vh' }}>
-                <Sidebar />
-            </div>
+    setErrors(validationErrors);
 
-            <div className="flex-grow-1 p-4" style={{ overflowY: 'auto', maxHeight: '100vh' }}>
-                <h2 className="mb-4">Registrar Usuario</h2>
+    if (Object.values(validationErrors).some((err) => err !== '')) {
+      Swal.fire({
+        title: '¡Error!',
+        text: 'Por favor, corrige los errores en el formulario.',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+      });
+    } else {
+      setIsLoading(true);
 
-                <Form noValidate validated={validated} onSubmit={handleSubmit}>
-                    <Row className="mb-3">
-                        <Col md={6}>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Nombre</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Ingrese nombre"
-                                    name="nombre"
-                                    value={formData.nombre}
-                                    onChange={handleChange}
-                                    required
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    Por favor ingrese un nombre.
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                        </Col>
-                    </Row>
+      try {
+        await register({
+          nombre: sanitizedData.nombre,
+          apellidos: sanitizedData.apellidos,
+          correo: sanitizedData.correo,
+          rol: sanitizedData.rol,
+          contrasena: sanitizedData.contrasena,
+        });
 
-                    <Row className="mb-3">
-                        <Col md={6}>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Apellidos</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Ingrese apellidos"
-                                    name="apellidos"
-                                    value={formData.apellidos}
-                                    onChange={handleChange}
-                                    required
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    Por favor ingrese los apellidos.
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                        </Col>
-                    </Row>
+        Swal.fire({
+          title: 'Registro exitoso',
+          text: 'Tu cuenta ha sido creada correctamente',
+          icon: 'success',
+          confirmButtonText: 'Iniciar sesión',
+        }).then(() => {
+          navigate('/login');
+        });
+      } catch (error) {
+        Swal.fire('Error', error.message || 'Error al crear la cuenta', 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
 
-                    <Row className="mb-3">
-                        <Col md={6}>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Correo Electrónico</Form.Label>
-                                <Form.Control
-                                    type="email"
-                                    placeholder="correo@ejemplo.com"
-                                    name="correo"
-                                    value={formData.correo}
-                                    onChange={handleChange}
-                                    required
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    Por favor ingrese un correo electrónico válido.
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                        </Col>
-                    </Row>
+  return (
+    <Container fluid className="p-0 d-flex" style={{ minHeight: '100vh' }}>
+      <div style={{ width: '200px', backgroundColor: '#003366', color: 'white', position: 'sticky', top: 0, height: '100vh' }}>
+        <Sidebar />
+      </div>
 
-                    <Row className="mb-3">
-                        <Col md={6}>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Rol</Form.Label>
-                                <Form.Select
-                                    name="rol"
-                                    value={formData.rol}
-                                    onChange={handleChange}
-                                    required
-                                >
-                                    <option value="ventanilla">Ventanilla</option>
-                                    <option value="admin">Administrador</option>
-                                </Form.Select>
-                                <Form.Control.Feedback type="invalid">
-                                    Por favor seleccione un rol.
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                        </Col>
-                    </Row>
+      <div className="flex-grow-1 p-4" style={{ overflowY: 'auto', maxHeight: '100vh' }}>
+        <h2 className="mb-4">Registrar Usuario</h2>
 
-                    <Row className="mb-3">
-                        <Col md={6}>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Contraseña</Form.Label>
-                                <Form.Control
-                                    type="password"
-                                    placeholder="Ingrese contraseña"
-                                    name="contrasena"
-                                    value={formData.contrasena}
-                                    onChange={handleChange}
-                                    required
-                                    isInvalid={!passwordMatch}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {!passwordMatch ? 'Las contraseñas no coinciden.' : 'Por favor ingrese una contraseña.'}
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                        </Col>
-                    </Row>
+        <Form noValidate onSubmit={handleSubmit}>
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Nombre</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Ingrese nombre"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  onBlur={(e) => validateField('nombre', e.target.value)}
+                  required
+                  isInvalid={!!errors.nombre}
+                />
+                <Form.Control.Feedback type="invalid">{errors.nombre}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
 
-                    <Row className="mb-3">
-                        <Col md={6}>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Confirmar Contraseña</Form.Label>
-                                <Form.Control
-                                    type="password"
-                                    placeholder="Confirme contraseña"
-                                    name="confirmarContrasena"
-                                    value={formData.confirmarContrasena}
-                                    onChange={handleChange}
-                                    required
-                                    isInvalid={!passwordMatch}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {!passwordMatch ? 'Las contraseñas no coinciden.' : 'Por favor confirme la contraseña.'}
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                        </Col>
-                    </Row>
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Apellidos</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Ingrese apellidos"
+                  name="apellidos"
+                  value={formData.apellidos}
+                  onChange={handleChange}
+                  onBlur={(e) => validateField('apellidos', e.target.value)}
+                  required
+                  isInvalid={!!errors.apellidos}
+                />
+                <Form.Control.Feedback type="invalid">{errors.apellidos}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
 
-                    <div className="d-flex justify-content-end mt-4">
-                        <Button variant="secondary" className="me-2">Cancelar</Button>
-                        <Button variant="primary" type="submit">Registrar Usuario</Button>
-                    </div>
-                </Form>
-            </div>
-        </Container>
-    );
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Correo Electrónico</Form.Label>
+                <Form.Control
+                  type="email"
+                  placeholder="correo@ejemplo.com"
+                  name="correo"
+                  value={formData.correo}
+                  onChange={handleChange}
+                  onBlur={(e) => validateField('correo', e.target.value)}
+                  required
+                  isInvalid={!!errors.correo}
+                />
+                <Form.Control.Feedback type="invalid">{errors.correo}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Rol</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="rol"
+                  value={formData.rol}
+                  onChange={handleChange}
+                  onBlur={(e) => validateField('rol', e.target.value)}
+                  isInvalid={!!errors.rol}
+                >
+                  <option value="ventanilla">Ventanilla</option>
+                  <option value="administrador">Administrador</option>
+                </Form.Control>
+                <Form.Control.Feedback type="invalid">{errors.rol}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Contraseña</Form.Label>
+                <Form.Control
+                  type="password"
+                  placeholder="Ingrese contraseña"
+                  name="contrasena"
+                  value={formData.contrasena}
+                  onChange={handleChange}
+                  onBlur={(e) => validateField('contrasena', e.target.value)}
+                  required
+                  isInvalid={!!errors.contrasena}
+                />
+                <Form.Control.Feedback type="invalid">{errors.contrasena}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Confirmar Contraseña</Form.Label>
+                <Form.Control
+                  type="password"
+                  placeholder="Confirme contraseña"
+                  name="confirmarContrasena"
+                  value={formData.confirmarContrasena}
+                  onChange={handleChange}
+                  onBlur={(e) => validateField('confirmarContrasena', e.target.value)}
+                  required
+                  isInvalid={!!errors.confirmarContrasena}
+                />
+                <Form.Control.Feedback type="invalid">{errors.confirmarContrasena}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <div className="d-flex justify-content-end mt-4">
+            <Button variant="secondary" className="me-2">
+              Cancelar
+            </Button>
+            <Button variant="primary" type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Procesando...
+                </>
+              ) : (
+                'Registrar Usuario'
+              )}
+            </Button>
+          </div>
+        </Form>
+      </div>
+    </Container>
+  );
 };
 
 export default RegisterUser;

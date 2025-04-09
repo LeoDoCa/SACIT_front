@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Form, Button, Row, Col } from 'react-bootstrap';
 import Sidebar from '../components/Sidebar.jsx';
+import Swal from 'sweetalert2';
+
+import useTextFieldValidation from '../hooks/useTextFieldValidation.jsx';
+import useCostFieldValidation from '../hooks/useCostFieldValidation.jsx';
+import useTimeRangeValidation from '../hooks/useTimeRangeValidation';
+
+import DOMPurify from 'dompurify';
 
 const AddWindow = () => {
     const [formData, setFormData] = useState({
@@ -11,18 +18,94 @@ const AddWindow = () => {
         finHorario: ''
     });
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+    const [errors, setErrors] = useState({});
+
+    const validateNumeroVentanilla = useCostFieldValidation('Número de ventanilla');
+    const validateNombre = useTextFieldValidation('Nombre');
+    
+    const { error: inicioHorarioError, validateTime: validateInicioHorario } = useTimeRangeValidation();
+    const { error: finHorarioError, validateTime: validateFinHorario } = useTimeRangeValidation();
+
+    const handleChange = (e, field) => {
+        const value = DOMPurify.sanitize(e.target.value);
+        setFormData(prev => ({ ...prev, [field]: value }));
+    
+        setErrors(prevErrors => {
+            const newErrors = { ...prevErrors };
+            if (newErrors[field]) {
+                delete newErrors[field];
+            }
+            return newErrors;
+        });
+    
+        validateForm(field, value);
+    };
+    
+    
+
+    const validateForm = () => {
+        let newErrors = {};
+
+        const numeroVentanillaError = validateNumeroVentanilla(formData.numeroVentanilla);
+        if (numeroVentanillaError) {
+            newErrors.numeroVentanilla = numeroVentanillaError;
+        }
+
+        const nameError = validateNombre(formData.nombre);
+        if (nameError) {
+            newErrors.nombre = nameError;
+        }
+
+        if (!formData.inicioHorario) {
+            newErrors.inicioHorario = 'El inicio de horario es obligatorio.';
+        } else if (!validateInicioHorario(formData.inicioHorario)) {
+            newErrors.inicioHorario = inicioHorarioError;
+        }
+
+        if (!formData.finHorario) {
+            newErrors.finHorario = 'El fin de horario es obligatorio.';
+        } else if (!validateFinHorario(formData.finHorario)) {
+            newErrors.finHorario = finHorarioError;
+        } else if (formData.inicioHorario && formData.finHorario <= formData.inicioHorario) {
+            newErrors.finHorario = 'El fin de horario debe ser después del inicio de horario.';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Datos de la ventanilla:', formData);
+        if (validateForm()) {
+            console.log('Datos de la ventanilla:', formData);
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: '¡Error!',
+                text: 'Por favor, corrige los errores antes de enviar el formulario.',
+            });
+        }
     };
 
     const handleCancel = () => {
-        console.log('Operación cancelada');
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: 'Se cancelarán todos los cambios realizados.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, cancelar',
+            cancelButtonText: 'No, volver'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setFormData({
+                    numeroVentanilla: '',
+                    nombre: '',
+                    inicioHorario: '',
+                    finHorario: ''
+                });
+                setErrors({});
+            }
+        });
     };
 
     return (
@@ -38,12 +121,16 @@ const AddWindow = () => {
                             <Form.Group>
                                 <Form.Label>Número de ventanilla</Form.Label>
                                 <Form.Control
-                                    type="text"
+                                    type="number"
                                     name="numeroVentanilla"
                                     placeholder="Número de ventanilla"
                                     value={formData.numeroVentanilla}
-                                    onChange={handleChange}
+                                    onChange={(e) => handleChange(e, 'numeroVentanilla')}
+                                    isInvalid={!!errors.numeroVentanilla}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.numeroVentanilla}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                     </Row>
@@ -57,8 +144,12 @@ const AddWindow = () => {
                                     name="nombre"
                                     placeholder="Nombre"
                                     value={formData.nombre}
-                                    onChange={handleChange}
+                                    onChange={(e) => handleChange(e, 'nombre')}
+                                    isInvalid={!!errors.nombre}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.nombre}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                     </Row>
@@ -72,8 +163,12 @@ const AddWindow = () => {
                                     name="inicioHorario"
                                     placeholder="Inicio de horario"
                                     value={formData.inicioHorario}
-                                    onChange={handleChange}
+                                    onChange={(e) => handleChange(e, 'inicioHorario')}
+                                    isInvalid={!!errors.inicioHorario}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.inicioHorario}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                     </Row>
@@ -87,26 +182,25 @@ const AddWindow = () => {
                                     name="finHorario"
                                     placeholder="Fin de horario"
                                     value={formData.finHorario}
-                                    onChange={handleChange}
+                                    onChange={(e) => handleChange(e, 'finHorario')}
+                                    isInvalid={!!errors.finHorario}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.finHorario}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                     </Row>
 
                     <div className="d-flex justify-content-end mt-4">
                         <Button
-                            variant="success"
+                            variant="secondary"
                             className="me-2"
-                            type="submit"
-                        >
-                            Guardar
-                        </Button>
-                        <Button
-                            variant="primary"
                             onClick={handleCancel}
                         >
                             Cancelar
                         </Button>
+                        <Button variant="primary" type="submit">Guardar</Button>
                     </div>
                 </Form>
             </div>
