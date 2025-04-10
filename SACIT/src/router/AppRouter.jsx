@@ -5,6 +5,9 @@ import Login from "../auth/Login.jsx";
 import ResetPassword from "../auth/ResetPassword.jsx";
 import Register from "../auth/Register.jsx";
 
+import NotFound from "../pages/404.jsx";
+import ServerError from "../pages/500.jsx";
+
 import Home from "../pages/Home.jsx";
 import ScheduleAnAppointment from "../pages/ScheduleAnAppointment.jsx";
 
@@ -39,6 +42,8 @@ const RoutesComponent = () => {
       <Route path="/schedule" element={<ScheduleAnAppointment />} />
       <Route path="/service-system" element={<ServiceSystem />} />
       <Route path="/reset-password/:token" element={<ResetPasswordForm />} />
+      <Route path="*" element={<NotFound />} />
+      <Route path="/500" element={<ServerError />} />
 
       <Route
         path="/history"
