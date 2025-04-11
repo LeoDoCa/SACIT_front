@@ -13,7 +13,6 @@ const ListaTramites = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Cargar trámites de la API al cargar el componente
     useEffect(() => {
         fetchTramites();
     }, []);
@@ -36,27 +35,26 @@ const ListaTramites = () => {
             };
 
             const response = await axios.get(apiUrl, config);
-            console.log('Trámites cargados:', response.data); // Inspecciona los datos
-            setTramites(Array.isArray(response.data) ? response.data : []); // Asegúrate de que sea un arreglo
+            console.log('Trámites cargados:', response.data); 
+            setTramites(Array.isArray(response.data) ? response.data : []); 
             setError(null);
         } catch (err) {
             console.error('Error al cargar los trámites:', err);
             setError('No se pudieron cargar los trámites. Por favor, intente de nuevo más tarde.');
-            setTramites([]); // Asegúrate de que `tramites` sea un arreglo vacío en caso de error
+            setTramites([]); 
         } finally {
             setLoading(false);
         }
     };
 
     const handleEditar = (uuid) => {
-        const tramite = tramites.find((t) => t.uuid === uuid); // Buscar por uuid
+        const tramite = tramites.find((t) => t.uuid === uuid); 
 
-        // Mapear `requieredDocuments` a `requiredDocumentsNames`
         const requiredDocumentsNames = tramite.requieredDocuments
             ? tramite.requieredDocuments.map((doc) => doc.name)
             : [];
 
-        setSelectedTramite({ ...tramite, requiredDocumentsNames }); // Agregar `requiredDocumentsNames`
+        setSelectedTramite({ ...tramite, requiredDocumentsNames }); 
         setShowModal(true);
     };
 
@@ -67,7 +65,6 @@ const ListaTramites = () => {
                 throw new Error('No se encontró un token de autenticación.');
             }
 
-            // Mapear `requiredDocumentsNames` de vuelta a `requieredDocuments`
             const requieredDocuments = selectedTramite.requiredDocumentsNames.map((name, index) => ({
                 id: selectedTramite.requieredDocuments?.[index]?.id || null, // Mantener el ID si existe
                 name,
@@ -77,7 +74,7 @@ const ListaTramites = () => {
                 ...selectedTramite,
                 cost: parseFloat(selectedTramite.cost),
                 estimatedTime: parseInt(selectedTramite.estimatedTime, 10),
-                requieredDocuments, // Usar el campo correcto
+                requieredDocuments,
             };
 
             const apiUrl = `${import.meta.env.VITE_SERVER_URL}/procedures/${selectedTramite.uuid}`;
@@ -134,7 +131,7 @@ const ListaTramites = () => {
                     throw new Error('No se encontró un token de autenticación.');
                 }
 
-                const apiUrl = `${import.meta.env.VITE_SERVER_URL}/procedures/${uuid}`; // Usar uuid
+                const apiUrl = `${import.meta.env.VITE_SERVER_URL}/procedures/${uuid}`; 
 
                 const config = {
                     headers: {
@@ -179,7 +176,7 @@ const ListaTramites = () => {
     const handleAddDocument = () => {
         setSelectedTramite((prev) => ({
             ...prev,
-            requiredDocumentsNames: [...(prev.requiredDocumentsNames || []), ''], // Asegurar que sea un arreglo
+            requiredDocumentsNames: [...(prev.requiredDocumentsNames || []), ''],
         }));
     };
 
@@ -189,7 +186,6 @@ const ListaTramites = () => {
         setSelectedTramite({ ...selectedTramite, requiredDocumentsNames: updatedDocs });
     };
 
-    // Función para formatear el tiempo estimado
     const formatEstimatedTime = (minutes) => {
         if (!minutes && minutes !== 0) return '-';
 
@@ -207,7 +203,6 @@ const ListaTramites = () => {
         }
     };
 
-    // Función para formatear el costo
     const formatCost = (cost) => {
         if (!cost && cost !== 0) return '$0.00';
         return `$${parseFloat(cost).toFixed(2)}`;
