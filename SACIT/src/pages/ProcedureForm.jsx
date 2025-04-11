@@ -15,11 +15,11 @@ const AddProcedure = () => {
     name: '',
     description: '',
     cost: '',
-    estimatedTime: '30', // Valor predeterminado de 30 minutos
-    creationDate: new Date().toISOString().split('T')[0], // Fecha actual
-    status: 'Activo', // Estado predeterminado
-    creatorId: 1, // ID de creador predeterminado
-    requiredDocumentsNames: [''] // Array de nombres de documentos
+    estimatedTime: '30',
+    creationDate: new Date().toISOString().split('T')[0], 
+    status: 'Activo', 
+    creatorId: 1, 
+    requiredDocumentsNames: [''] 
   });
 
   const [errors, setErrors] = useState({});
@@ -103,36 +103,30 @@ const AddProcedure = () => {
 
     if (validateForm()) {
       try {
-        // Preparar datos para envío a la API
         const submissionData = {
           ...formData,
           cost: parseFloat(formData.cost),
           estimatedTime: parseInt(formData.estimatedTime, 10),
         };
 
-        // Eliminar documentos vacíos
         submissionData.requiredDocumentsNames = submissionData.requiredDocumentsNames.filter(
           (doc) => doc.trim() !== ''
         );
 
-        // Obtener el token desde localStorage
         const accessToken = localStorage.getItem('accessToken');
 
         if (!accessToken) {
           throw new Error('No se encontró un token de autenticación.');
         }
 
-        // Obtener URL de la API desde variable de entorno
         const apiUrl = `${import.meta.env.VITE_SERVER_URL}/procedures/`;
 
-        // Configurar encabezados con el token
         const config = {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         };
 
-        // Enviar a la API
         const response = await axios.post(apiUrl, submissionData, config);
 
         console.log('Trámite guardado:', response.data);
@@ -144,7 +138,6 @@ const AddProcedure = () => {
           confirmButtonText: 'OK',
         });
 
-        // Resetear formulario después de envío exitoso
         setFormData({
           name: '',
           description: '',
