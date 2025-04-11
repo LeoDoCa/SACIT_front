@@ -1,0 +1,6 @@
+projectKey=react-sacit
+serverUrl=http://192.168.0.57:9000
+serverVersion=25.3.0.104237
+dashboardUrl=http://192.168.0.57:9000/dashboard?id=react-sacit
+ceTaskId=b8333c78-8589-4d95-ad68-14f864335552
+ceTaskUrl=http://192.168.0.57:9000/api/ce/task?id=b8333c78-8589-4d95-ad68-14f864335552
