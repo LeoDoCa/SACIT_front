@@ -4,6 +4,7 @@ import useEmailValidation from '../hooks/useEmailValidation';
 import { login } from '../config/http-client/authService';
 import Swal from 'sweetalert2';
 import DOMPurify from 'dompurify';
+import BackToHomeButton from '../components/BackToHomeButton';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -51,11 +52,11 @@ const Login = () => {
 
         const userRole = response.role;
         if (userRole === 'ROLE_ADMIN') {
-          navigate('/procedure-form'); 
+          navigate('/date-of-the-day'); 
         } else if (userRole === 'ROLE_USER') {
           navigate('/');
         } else if (userRole === 'ROLE_WINDOW') {
-          navigate('/window-dashboard');
+          navigate('/service-system');
         } else {
           navigate('/'); 
         }
@@ -114,6 +115,9 @@ const Login = () => {
             <p className="text-muted">
               <a href="/reset-password" className="link-primary">¿Olvidaste tu contraseña?</a>
             </p>
+          </div>
+          <div className='d-flex justify-content-center mt-1'>
+            <BackToHomeButton />
           </div>
         </div>
       </div>

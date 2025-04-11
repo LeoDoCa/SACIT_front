@@ -267,7 +267,6 @@ const AgendarCita = () => {
 
     const handleBack = () => {
         if (currentStep === 2) {
-            // Si el usuario regresa al paso 1, limpia los archivos subidos
             setIdentificacion(null);
             setRecetaMedica(null);
         }
@@ -552,7 +551,7 @@ const AgendarCita = () => {
                                         <Button
                                             variant="primary"
                                             onClick={handleNext}
-                                            disabled={!identificacion || !recetaMedica} // Validación para habilitar el botón
+                                            disabled={!identificacion || !recetaMedica}
                                         >
                                             Siguiente
                                         </Button>
@@ -629,7 +628,7 @@ const AgendarCita = () => {
             <div className="flex-grow-1 p-4">
                 <BackToHomeButton />
 
-                <h2 className="mb-4">Agendar Cita</h2>
+                <h2 className="mb-4 mt-4">Agendar Cita</h2>
 
                 <StepProgressBar />
 

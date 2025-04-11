@@ -27,9 +27,30 @@ import TransactionHistory from "../pages/TransactionHistory.jsx";
 const PrivateRoute = ({ children, role }) => {
   const user = JSON.parse(localStorage.getItem('user'));
   if (!user || (role && user.role !== role)) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/" />;
   }
   return children;
+};
+
+const UserOrGuestRoute = ({ children }) => {
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+  
+  if (!user) {
+    return children;
+  }
+
+  if (user.role === 'ROLE_USER') {
+    return children;
+  }
+  
+  if (user.role === 'ROLE_ADMIN') {
+    return <Navigate to="/date-off-the-day" />;
+  } else if (user.role === 'ROLE_WINDOW') {
+    return <Navigate to="/service-system" />;
+  } else {
+    return <Navigate to="/login" />;
+  }
 };
 
 const RoutesComponent = () => {
@@ -38,18 +59,42 @@ const RoutesComponent = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/" element={<Home />} />
-      <Route path="/schedule" element={<ScheduleAnAppointment />} />
-      <Route path="/service-system" element={<ServiceSystem />} />
       <Route path="/reset-password/:token" element={<ResetPasswordForm />} />
       <Route path="*" element={<NotFound />} />
       <Route path="/500" element={<ServerError />} />
 
+      <Route 
+        path="/" 
+        element={
+          <UserOrGuestRoute>
+            <Home />
+          </UserOrGuestRoute>
+        } 
+      />
+      
+      <Route 
+        path="/schedule" 
+        element={
+          <UserOrGuestRoute>
+            <ScheduleAnAppointment />
+          </UserOrGuestRoute>
+        } 
+      />
+
       <Route
         path="/history"
         element={
-          <PrivateRoute role={null}>
+          <PrivateRoute role="ROLE_USER">
             <TransactionHistory />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/service-system"
+        element={
+          <PrivateRoute role="ROLE_WINDOW">
+            <ServiceSystem />
           </PrivateRoute>
         }
       />
@@ -103,7 +148,7 @@ const RoutesComponent = () => {
         }
       />
       <Route
-        path="/date-off-the-day"
+        path="/date-of-the-day"
         element={
           <PrivateRoute role="ROLE_ADMIN">
             <DateOffTheDay />

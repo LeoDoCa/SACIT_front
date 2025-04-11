@@ -1,17 +1,17 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Button, Nav } from 'react-bootstrap';
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { FaUser, FaHistory, FaSignOutAlt, FaBars, FaTimes, FaUserPlus } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import AuthContext from '../config/context/auth-context';
 import { logout } from '../config/http-client/authService';
-import Swal from "sweetalert2";
+import { handleLogout } from '../utils/logoutHelper';
 
-const Sidebar = () => {
+const UserSideBar = () => {
   const { dispatch } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
   const isLoggedIn = !!localStorage.getItem("accessToken");
-  const [userData, setUserData] = useState({ name: '', email: '' });
+  const [userData, setUserData] = useState({ name: '', email: '', role: '' });
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -22,7 +22,8 @@ const Sidebar = () => {
           const user = JSON.parse(userJson);
           setUserData({
             name: user.name + " " + user.lastName || 'Usuario',
-            email: user.email || 'correo@example.com'
+            email: user.email || 'correo@example.com',
+            role: user.role || 'ROLE_USER' 
           });
         }
       } catch (error) {
@@ -33,42 +34,6 @@ const Sidebar = () => {
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
-  };
-
-  const handleLogout = () => {
-    Swal.fire({
-      title: "¿Deseas cerrar sesión?",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, cerrar sesión',
-      cancelButtonText: 'Cancelar',
-      reverseButtons: true,
-      confirmButtonColor: '#002E5D',
-      iconColor: '#c9dae1'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        logout()
-          .then(() => {
-            dispatch({ type: 'SIGNOUT' }); 
-            navigate('/login', { replace: true });
-            Swal.fire({
-              title: '¡Sesión cerrada!',
-              text: 'Has cerrado sesión correctamente',
-              icon: 'success',
-              confirmButtonColor: '#002E5D'
-            });
-          })
-          .catch(error => {
-            console.error('Error al cerrar sesión:', error);
-            Swal.fire({
-              title: 'Error',
-              text: 'Hubo un problema al intentar cerrar sesión. Intenta más tarde.',
-              icon: 'error',
-              confirmButtonColor: '#d33'
-            });
-          });
-      }
-    });
   };
 
   return (
@@ -82,12 +47,19 @@ const Sidebar = () => {
       </Button>
       
       <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
-        <div className="sidebar-header">
-          <div className="user-avatar">
-            <FaUser size={45} />
+        <div className="sidebar-header mt-0">
+          <Button 
+            variant="link" 
+            onClick={toggleSidebar} 
+            className="close-btn d-none d-md-block"
+          >
+            <FaTimes size={20} />
+          </Button>
+          <div className="user-avatar mt-4 mb-0">
+            <FaUser size={40} />
           </div>
           {isLoggedIn ? (
-            <div className="user-info">
+            <div className="user-info mt-2">
               <h3>{userData.name}</h3>
               <p>{userData.email}</p>
             </div>
@@ -98,34 +70,28 @@ const Sidebar = () => {
               </div>
             </div>
           )}
-          
-          <Button 
-            variant="link" 
-            onClick={toggleSidebar} 
-            className="close-btn d-none d-md-block"
-          >
-            <FaTimes size={20} />
-          </Button>
         </div>
         
         <Nav className="flex-column sidebar-nav">
-            {isLoggedIn ? (
+        {isLoggedIn ? (
                 <>
-                <Nav.Link href="/history" className="sidebar-item">
-                    <FaHistory className="icon" /> Historial de Trámites
-                </Nav.Link>
-                <Nav.Link href="#" className="sidebar-item mt-auto" onClick={handleLogout}>
+                {userData.role === 'ROLE_USER' && (
+                    <Nav.Link as={Link} to="/history" className="sidebar-item">
+                        <FaHistory className="icon" /> Historial de Trámites
+                    </Nav.Link>
+                )}
+                <Nav.Link className="sidebar-item mt-auto" onClick={() => handleLogout(logout, dispatch, navigate)}>
                     <FaSignOutAlt className="icon" /> Cerrar sesión
                 </Nav.Link>
                 </>
             ) : (
                 <>
-                <Nav.Link href="/register" className="sidebar-item">
-                    <FaUserPlus className="register-icon" />
+                <Nav.Link as={Link} to="/register" className="sidebar-item">
+                    <FaUserPlus className="register-icon" size={25}/>
                     Registrarse
                 </Nav.Link>
-                <Nav.Link href="/login" className="sidebar-item mt-auto">
-                    <FaSignOutAlt className="icon" /> Iniciar sesión
+                <Nav.Link as={Link} to="/login" className="sidebar-item mt-auto">
+                    <FaSignOutAlt className="icon" size={20} /> Iniciar sesión
                 </Nav.Link>
                 </>
             )}
@@ -246,10 +212,11 @@ const Sidebar = () => {
 
         .close-btn {
           position: absolute;
-          top: 20px;
-          right: 20px;
+          top: 10px;
+          right: 10px;
           color: white;
           font-size: 1.5rem;
+          z-index: 1;
         }
         
       `}</style>
@@ -257,4 +224,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default UserSideBar;

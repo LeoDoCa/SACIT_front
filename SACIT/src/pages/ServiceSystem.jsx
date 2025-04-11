@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Button, Navbar } from 'react-bootstrap';
+import { Container, Row, Col, Navbar } from 'react-bootstrap';
 import ServiceCard from './../components/ServiceCard'; 
 import ServiceDetailsModal from './../components/ServiceDetailsModal'; 
+import UserSideBar from '../components/UserSideBar';
 
 const ServiceSystem = () => {
   const [showModal, setShowModal] = useState(false);
@@ -39,21 +40,21 @@ const ServiceSystem = () => {
   };
 
   return (
-    <div className="min-vh-100 bg-light">
-      <Navbar bg="dark" variant="dark" className="mb-4">
-        <Container>
-          <Navbar.Brand href="#home">
-            <Button className="navbar-toggler border-0" type="button" aria-label="Menú de navegación">
-              <span className="navbar-toggler-icon"></span>
-            </Button>
-          </Navbar.Brand>
-        </Container>
-      </Navbar>
+    <div className="service-system-wrapper">
+      <UserSideBar />  
+      <div className="main-content">
+        <Navbar variant="dark" className="mb-4" expand="lg" style={{backgroundColor: "#1a2942"}}>
+          <Container>
+            <Navbar.Brand>
+              <h4>Sistema de Administración de Citas y Trámites</h4>
+            </Navbar.Brand>
+          </Container>
+        </Navbar>
 
-      <Container className="pb-5">
-        <h2 className="text-center mb-4">Trámites del día</h2>
-
-        <Row>
+        <Container className="main-container">
+        <h2 className="text-center my-5">Trámites del día</h2>
+        
+        <Row className="justify-content-center">
           {services.map((service) => (
             <ServiceCard
               key={service.id}
@@ -64,6 +65,7 @@ const ServiceSystem = () => {
           ))}
         </Row>
       </Container>
+      </div>
 
       {selectedService && (
         <ServiceDetailsModal
@@ -73,6 +75,34 @@ const ServiceSystem = () => {
           handleFinalize={handleFinalizeService}
         />
       )}
+
+      <style>{`
+        .service-system-wrapper {
+          display: flex;
+          min-height: 100vh;
+          background-color: #f8f9fa;
+        }
+        
+        .main-content {
+          flex: 1;
+          padding-left: 0;
+          transition: padding-left 0.3s;
+        }
+
+        .sidebar.open + .main-content {
+          padding-left: 250px;
+        }
+        
+        .page-content {
+          padding: 2rem 0 5rem;
+        }
+        
+        @media (max-width: 768px) {
+          .main-content {
+            width: 100%;
+          }
+        }
+      `}</style>
     </div>
   );
 };
