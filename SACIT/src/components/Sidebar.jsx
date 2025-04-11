@@ -3,47 +3,12 @@ import { useNavigate } from "react-router-dom"
 import React, { useContext } from 'react';
 import AuthContext from '../config/context/auth-context';
 import { logout } from '../config/http-client/authService';
-import Swal from "sweetalert2";
+import { CgFileDocument } from "react-icons/cg";
+import { handleLogout } from '../utils/logoutHelper';
 
 const Sidebar = () => {
     const { dispatch } = useContext(AuthContext);
     const navigate = useNavigate();
-
-    const handleLogout = () => {
-        Swal.fire({
-          title: "¿Deseas cerrar sesión?",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonText: 'Sí, cerrar sesión',
-          cancelButtonText: 'Cancelar',
-          reverseButtons: true,
-          confirmButtonColor: '#002E5D',
-          iconColor: '#c9dae1'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            logout()
-              .then(() => {
-                dispatch({ type: 'SIGNOUT' }); 
-                navigate('/login', { replace: true });
-                Swal.fire({
-                  title: '¡Sesión cerrada!',
-                  text: 'Has cerrado sesión correctamente',
-                  icon: 'success',
-                  confirmButtonColor: '#002E5D'
-                });
-              })
-              .catch(error => {
-                console.error('Error al cerrar sesión:', error);
-                Swal.fire({
-                  title: 'Error',
-                  text: 'Hubo un problema al intentar cerrar sesión. Intenta más tarde.',
-                  icon: 'error',
-                  confirmButtonColor: '#d33'
-                });
-              });
-          }
-        });
-      };
 
     return (
         <div style={{ 
@@ -55,7 +20,11 @@ const Sidebar = () => {
             flexDirection: 'column'
         }}>
             <div className="p-3">
-                <h4 className="mb-4 text-white">Menú</h4>
+                <div className="d-flex align-items-center mb-3">
+                    <CgFileDocument size={30} color="white" className="me-2" />
+                    <h2 className="mb-0 text-white">SACIT</h2>
+                </div>
+                <h4 className="mb-2 text-white">Menú</h4>
         
                 <div className="accordion accordion-flush" id="menuAccordion">
                     <div className="accordion-item" style={{ backgroundColor: '#2d3a4e' }}>
@@ -84,16 +53,18 @@ const Sidebar = () => {
                                 <ul className="list-unstyled ms-3 mt-3">
                                     <li className='mb-2'>
                                         <a
-                                            href="/procedure-form"
+                                            onClick={() => navigate('/procedure-form')}
                                             className="text-white text-decoration-none"
+                                            style={{ cursor: 'pointer' }}
                                         >
                                             Agregar
                                         </a>
                                     </li>
                                     <li>
                                         <a
-                                            href="/procedure-list"
+                                            onClick={() => navigate('/procedure-list')}
                                             className="text-white text-decoration-none"
+                                            style={{ cursor: 'pointer' }}
                                         >
                                             Ver Trámites
                                         </a>
@@ -129,16 +100,18 @@ const Sidebar = () => {
                                 <ul className="list-unstyled ms-3 mt-3">
                                     <li className='mb-2'>
                                         <a
-                                            href="/window-form"
+                                            onClick={() => navigate('/window-form')}
                                             className="text-white text-decoration-none"
+                                            style={{ cursor: 'pointer' }}
                                         >
                                             Agregar
                                         </a>
                                     </li>
                                     <li>
                                         <a
-                                            href="/window-list"
+                                            onClick={() => navigate('/window-list')}
                                             className="text-white text-decoration-none"
+                                            style={{ cursor: 'pointer' }}
                                         >
                                             Ver Ventanillas
                                         </a>
@@ -174,8 +147,9 @@ const Sidebar = () => {
                                 <ul className="list-unstyled ms-3 mt-3">
                                     <li>
                                         <a
-                                            href="/date-off-the-day"
+                                            onClick={() => navigate('/date-of-the-day')}
                                             className="text-white text-decoration-none"
+                                            style={{ cursor: 'pointer' }}
                                         >
                                             Ver Citas
                                         </a>
@@ -211,16 +185,18 @@ const Sidebar = () => {
                                 <ul className="list-unstyled ms-3 mt-3 pb-3">
                                     <li className='mb-2'>
                                         <a
-                                            href="/user-list"
+                                            onClick={() => navigate('/user-list')}
                                             className="text-white text-decoration-none"
+                                            style={{ cursor: 'pointer' }}
                                         >
                                             Ver Usuarios
                                         </a>
                                     </li>
                                     <li>
                                         <a
-                                            href="/user-form"
+                                            onClick={() => navigate('/user-form')}
                                             className="text-white text-decoration-none"
+                                            style={{ cursor: 'pointer' }}
                                         >
                                             Crear Usuarios
                                         </a>
@@ -237,7 +213,7 @@ const Sidebar = () => {
                     variant="success"
                     className="d-flex align-items-center justify-content-center w-100 rounded-0 py-2 p-2"
                     style={{height: '4rem'}}
-                    onClick={handleLogout}
+                    onClick={() => handleLogout(logout, dispatch, navigate)}
                 >
                     <span className="me-2">CERRAR SESIÓN</span>
                     <svg width="24" height="30" viewBox="0 0 24 24" fill="none">
