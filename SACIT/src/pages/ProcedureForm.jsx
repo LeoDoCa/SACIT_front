@@ -2,133 +2,189 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import { Plus, X } from 'react-bootstrap-icons';
-import Sidebar from '../components/Sidebar.jsx'; 
+import Sidebar from '../components/Sidebar.jsx';
 import useTextFieldValidation from './../hooks/useTextFieldValidation.jsx';
 import useDescriptionValidation from '../hooks/useDescriptionValidation.jsx';
 import useCostFieldValidation from '../hooks/useCostFieldValidation.jsx';
 import DOMPurify from 'dompurify';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 
 const AddProcedure = () => {
   const [formData, setFormData] = useState({
-    nombre: '',
-    descripcion: '',
-    costo: '',
-    fechas: [''],
-    documentos: ['']
+    name: '',
+    description: '',
+    cost: '',
+    estimatedTime: '30',
+    creationDate: new Date().toISOString().split('T')[0], 
+    status: 'Activo', 
+    creatorId: 1, 
+    requiredDocumentsNames: [''] 
   });
 
   const [errors, setErrors] = useState({});
-  
-  const validateNombre = useTextFieldValidation('Nombre');
-  const validateDescripcion = useDescriptionValidation('Descripción');
-  const validateCosto = useCostFieldValidation('Costo');
-  const validateDocumentos = useTextFieldValidation('Documento');
+
+  const validateName = useTextFieldValidation('Nombre');
+  const validateDescription = useDescriptionValidation('Descripción');
+  const validateCost = useCostFieldValidation('Costo');
+  const validateDocument = useTextFieldValidation('Documento');
 
   const handleChange = (e, field, index = null) => {
     const value = e.target.value;
-  
-    const sanitizedValue = DOMPurify.sanitize(value);
-  
-    if (field === 'descripcion' || field === 'nombre' || field === 'documentos') {
-      if (field === 'descripcion') {
-        setFormData({ ...formData, [field]: sanitizedValue });
-      } else {
-        if (index !== null) {
-          const newArray = [...formData[field]];
-          newArray[index] = sanitizedValue;
-          setFormData({ ...formData, [field]: newArray });
-        } else {
-          setFormData({ ...formData, [field]: sanitizedValue });
-        }
-      }
-    } else {
-      if (index !== null) {
-        const newArray = [...formData[field]];
-        newArray[index] = value;
-        setFormData({ ...formData, [field]: newArray });
-      } else {
-        setFormData({ ...formData, [field]: value });
-      }
-    }
-  
-    validateForm(field, value);
-  };  
+    const sanitizedValue = field === 'description' || field === 'name' || field === 'requiredDocumentsNames'
+      ? DOMPurify.sanitize(value)
+      : value;
 
-  const handleAddField = (field) => {
-    setFormData({ ...formData, [field]: [...formData[field], ''] });
+    if (index !== null) {
+      const newArray = [...formData[field]];
+      newArray[index] = sanitizedValue;
+      setFormData({ ...formData, [field]: newArray });
+    } else {
+      setFormData({ ...formData, [field]: sanitizedValue });
+    }
+
+    validateForm();
   };
 
-  const handleRemoveField = (field, index) => {
-    const newArray = [...formData[field]];
-    newArray.splice(index, 1);
-    setFormData({ ...formData, [field]: newArray });
+  const handleAddDocument = () => {
+    setFormData({
+      ...formData,
+      requiredDocumentsNames: [...formData.requiredDocumentsNames, '']
+    });
+  };
+
+  const handleRemoveDocument = (index) => {
+    const newDocuments = [...formData.requiredDocumentsNames];
+    newDocuments.splice(index, 1);
+    setFormData({ ...formData, requiredDocumentsNames: newDocuments });
   };
 
   const validateForm = () => {
     let newErrors = {};
 
-    const nameError = validateNombre(formData.nombre);
+    const nameError = validateName(formData.name);
     if (nameError) {
-      newErrors.nombre = nameError;
+      newErrors.name = nameError;
     }
 
-    const descripcionError = validateDescripcion(formData.descripcion);
-    if (descripcionError) {
-      newErrors.descripcion = descripcionError;
+    const descriptionError = validateDescription(formData.description);
+    if (descriptionError) {
+      newErrors.description = descriptionError;
     }
 
-    const costError = validateCosto(formData.costo);
+    const costError = validateCost(formData.cost);
     if (costError) {
-      newErrors.costo = costError;
+      newErrors.cost = costError;
     }
 
-    if (formData.fechas.some(fecha => fecha.trim() === '')) {
-      newErrors.fechas = 'No pueden haber fechas vacías';
+    if (!formData.estimatedTime) {
+      newErrors.estimatedTime = 'El tiempo estimado es requerido';
     }
 
-    const documentoErrors = formData.documentos.map((doc, index) => validateDocumentos(doc));
-    const documentoConErrores = documentoErrors.find(error => error !== '');
-
-    if (documentoConErrores) {
-    newErrors.documentos = documentoConErrores;
+    if (formData.requiredDocumentsNames.some(doc => doc.trim() === '')) {
+      newErrors.requiredDocumentsNames = 'Los nombres de documentos no pueden estar vacíos';
     }
 
+    const documentErrors = formData.requiredDocumentsNames.map((doc, index) =>
+      validateDocument(doc)
+    );
+
+    const documentWithErrors = documentErrors.find(error => error !== '');
+    if (documentWithErrors) {
+      newErrors.requiredDocumentsNames = documentWithErrors;
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (validateForm()) {
-      console.log('Datos del trámite:', formData);
-      alert('Trámite guardado exitosamente');
+      try {
+        const submissionData = {
+          ...formData,
+          cost: parseFloat(formData.cost),
+          estimatedTime: parseInt(formData.estimatedTime, 10),
+        };
+
+        submissionData.requiredDocumentsNames = submissionData.requiredDocumentsNames.filter(
+          (doc) => doc.trim() !== ''
+        );
+
+        const accessToken = localStorage.getItem('accessToken');
+
+        if (!accessToken) {
+          throw new Error('No se encontró un token de autenticación.');
+        }
+
+        const apiUrl = `${import.meta.env.VITE_SERVER_URL}/procedures/`;
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        };
+
+        const response = await axios.post(apiUrl, submissionData, config);
+
+        console.log('Trámite guardado:', response.data);
+
+        Swal.fire({
+          title: '¡Éxito!',
+          text: 'Trámite guardado exitosamente',
+          icon: 'success',
+          confirmButtonText: 'OK',
+        });
+
+        setFormData({
+          name: '',
+          description: '',
+          cost: '',
+          estimatedTime: '30',
+          creationDate: new Date().toISOString().split('T')[0],
+          status: 'Activo',
+          creatorId: 1,
+          requiredDocumentsNames: [''],
+        });
+      } catch (error) {
+        console.error('Error al guardar trámite:', error);
+
+        Swal.fire({
+          title: '¡Error!',
+          text: `No se pudo guardar el trámite: ${error.response?.data?.message || error.message}`,
+          icon: 'error',
+          confirmButtonText: 'OK',
+        });
+      }
     }
   };
 
   const handleCancel = () => {
-          Swal.fire({
-              title: '¿Estás seguro?',
-              text: 'Se cancelarán todos los cambios realizados.',
-              icon: 'warning',
-              showCancelButton: true,
-              confirmButtonText: 'Sí, cancelar',
-              cancelButtonText: 'No, volver'
-          }).then((result) => {
-              if (result.isConfirmed) {
-                  setFormData({
-                    nombre: '',
-                    descripcion: '',
-                    costo: '',
-                    fechas: [''],
-                    documentos: ['']
-                    });
-                    setErrors({});
-              }
-          });
-      };
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Se cancelarán todos los cambios realizados.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'No, volver'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setFormData({
+          name: '',
+          description: '',
+          cost: '',
+          estimatedTime: '30',
+          creationDate: new Date().toISOString().split('T')[0],
+          status: 'Activo',
+          creatorId: 1,
+          requiredDocumentsNames: ['']
+        });
+        setErrors({});
+      }
+    });
+  };
 
   return (
     <Container fluid className="p-0 d-flex" style={{ minHeight: '100vh' }}>
@@ -147,11 +203,11 @@ const AddProcedure = () => {
                 <Form.Control
                   type="text"
                   placeholder="Ingrese el nombre del trámite"
-                  value={formData.nombre}
-                  onChange={(e) => handleChange(e, 'nombre')}
-                  isInvalid={!!errors.nombre}
+                  value={formData.name}
+                  onChange={(e) => handleChange(e, 'name')}
+                  isInvalid={!!errors.name}
                 />
-                <Form.Control.Feedback type="invalid">{errors.nombre}</Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
               </Form.Group>
             </Col>
           </Row>
@@ -164,27 +220,60 @@ const AddProcedure = () => {
                   as="textarea"
                   rows={4}
                   placeholder="Ingrese una descripción del trámite"
-                  value={formData.descripcion}
-                  onChange={(e) => handleChange(e, 'descripcion')}
-                  isInvalid={!!errors.descripcion}
+                  value={formData.description}
+                  onChange={(e) => handleChange(e, 'description')}
+                  isInvalid={!!errors.description}
                 />
-                <Form.Control.Feedback type="invalid">{errors.descripcion}</Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{errors.description}</Form.Control.Feedback>
               </Form.Group>
             </Col>
           </Row>
 
           <Row className="mb-3">
-            <Col md={6}>
+            <Col md={3}>
               <Form.Group>
                 <Form.Label>Costo</Form.Label>
                 <Form.Control
                   type="text"
                   placeholder="Ingrese el costo del trámite"
-                  value={formData.costo}
-                  onChange={(e) => handleChange(e, 'costo')}
-                  isInvalid={!!errors.costo}
+                  value={formData.cost}
+                  onChange={(e) => handleChange(e, 'cost')}
+                  isInvalid={!!errors.cost}
                 />
-                <Form.Control.Feedback type="invalid">{errors.costo}</Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{errors.cost}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+
+            <Col md={3}>
+              <Form.Group>
+                <Form.Label>Tiempo estimado</Form.Label>
+                <Form.Select
+                  value={formData.estimatedTime}
+                  onChange={(e) => handleChange(e, 'estimatedTime')}
+                  isInvalid={!!errors.estimatedTime}
+                >
+                  <option value="15">15 minutos</option>
+                  <option value="30">30 minutos</option>
+                  <option value="45">45 minutos</option>
+                  <option value="60">1 hora</option>
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">{errors.estimatedTime}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Row className="mb-3">
+            <Col md={3}>
+              <Form.Group>
+                <Form.Label>Estado</Form.Label>
+                <Form.Select
+                  value={formData.status}
+                  onChange={(e) => handleChange(e, 'status')}
+                >
+                  <option value="Activo">Activo</option>
+                  <option value="Inactivo">Inactivo</option>
+                  <option value="En revisión">En revisión</option>
+                </Form.Select>
               </Form.Group>
             </Col>
           </Row>
@@ -192,87 +281,49 @@ const AddProcedure = () => {
           <Row className="mb-3">
             <Col md={6}>
               <div className="d-flex align-items-center justify-content-between">
-                <Form.Label>Fechas</Form.Label>
+                <Form.Label>Documentos requeridos</Form.Label>
                 <Button
                   variant="outline-secondary"
                   size="sm"
                   className="rounded-circle"
-                  onClick={() => handleAddField('fechas')}
+                  onClick={handleAddDocument}
                 >
                   <Plus />
                 </Button>
               </div>
 
-              {formData.fechas.map((fecha, index) => (
-                <Form.Group className="mb-2 d-flex align-items-center" key={`fecha-${index}`}>
-                  <Form.Control
-                    type="date"
-                    placeholder={`Fecha ${index + 1}`}
-                    value={fecha}
-                    onChange={(e) => handleChange(e, 'fechas', index)}
-                  />
-                  {index > 0 && (
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      className="ms-2"
-                      onClick={() => handleRemoveField('fechas', index)}
-                    >
-                      <X />
-                    </Button>
-                  )}
-                </Form.Group>
-              ))}
-              {errors.fechas && <div className="text-danger">{errors.fechas}</div>}
-            </Col>
-          </Row>
-
-          <Row className="mb-3">
-            <Col md={6}>
-              <div className="d-flex align-items-center justify-content-between">
-                <Form.Label>Documentos</Form.Label>
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  className="rounded-circle"
-                  onClick={() => handleAddField('documentos')}
-                >
-                  <Plus />
-                </Button>
-              </div>
-
-              {formData.documentos.map((doc, index) => (
+              {formData.requiredDocumentsNames.map((doc, index) => (
                 <Form.Group className="mb-2 d-flex align-items-center" key={`doc-${index}`}>
                   <Form.Control
                     type="text"
                     placeholder={`Documento ${index + 1}`}
                     value={doc}
-                    onChange={(e) => handleChange(e, 'documentos', index)}
+                    onChange={(e) => handleChange(e, 'requiredDocumentsNames', index)}
                   />
                   {index > 0 && (
                     <Button
                       variant="danger"
                       size="sm"
                       className="ms-2"
-                      onClick={() => handleRemoveField('documentos', index)}
+                      onClick={() => handleRemoveDocument(index)}
                     >
                       <X />
                     </Button>
                   )}
                 </Form.Group>
               ))}
-              {errors.documentos && <div className="text-danger">{errors.documentos}</div>}
+              {errors.requiredDocumentsNames && <div className="text-danger">{errors.requiredDocumentsNames}</div>}
             </Col>
           </Row>
 
           <div className="d-flex justify-content-end mt-4">
             <Button
-                variant="secondary"
-                className="me-2"
-                onClick={handleCancel}
-                >
-                Cancelar
-                </Button>
+              variant="secondary"
+              className="me-2"
+              onClick={handleCancel}
+            >
+              Cancelar
+            </Button>
             <Button variant="primary" type="submit">Guardar</Button>
           </div>
         </Form>
