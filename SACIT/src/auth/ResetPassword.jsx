@@ -128,7 +128,7 @@ const ResetPassword = () => {
 
           <div className="mt-3 text-center">
             <p className="text-muted">
-              ¿Recuerdas tu contraseña? <a href="/login" className="link-primary">Inicia sesión</a>
+              ¿Recuerdas tu contraseña? <a onClick={() => navigate('/login')} className="link-primary" style={{ cursor: 'pointer' }}>Inicia sesión</a>
             </p>
           </div>
         </div>

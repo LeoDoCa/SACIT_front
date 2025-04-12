@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useEmailValidation from '../hooks/useEmailValidation';
-import { login } from '../config/http-client/authService';
 import Swal from 'sweetalert2';
 import DOMPurify from 'dompurify';
+import useEmailValidation from '../hooks/useEmailValidation';
+import usePasswordValidation from '../hooks/usePasswordValidation';
 import BackToHomeButton from '../components/BackToHomeButton';
+import { Eye, EyeOff } from 'react-feather';
+
+import { sendOtp, validateCredentials } from '../config/http-client/authService'; 
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({ email: '', password: '' });
+  const [attempts, setAttempts] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const validateEmail = useEmailValidation();
+  const validatePassword = usePasswordValidation();
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const validateField = (name, value) => {
@@ -25,8 +32,13 @@ const Login = () => {
       }
     }
 
-    if (name === 'password' && value.trim() === '') {
-      error = 'La contraseña es obligatoria';
+    if (name === 'password') {
+      if (value.trim() === '') {
+        error = 'La contraseña es obligatoria';
+      } else {
+        const passwordError = validatePassword(value);
+        if (passwordError) error = passwordError;
+      }
     }
 
     setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
@@ -36,37 +48,68 @@ const Login = () => {
     e.preventDefault();
 
     const sanitizedEmail = DOMPurify.sanitize(email);
-    const sanitizedPassword = password;
+    const sanitizedPassword = DOMPurify.sanitize(password);
+
+    if (attempts[sanitizedEmail]?.blockedUntil > Date.now()) {
+      Swal.fire('Bloqueado', 'El correo está bloqueado. Intente nuevamente después de 30 minutos.', 'error');
+      return;
+    }
 
     let validationErrors = {
-      email: sanitizedEmail.trim() === '' ? 'El correo es obligatorio' : validateEmail(sanitizedEmail),
-      password : sanitizedPassword.trim() === '' ? 'La contraseña es obligatoria' : ''
+      email: sanitizedEmail.trim() === '' ? 'El correo es obligatorio' : '',
+      password: sanitizedPassword.trim() === '' ? 'La contraseña es obligatoria' : '',
     };
 
     setErrors(validationErrors);
 
-    if (!validationErrors.email && !validationErrors.password) {
+    if (Object.values(validationErrors).some((err) => err !== '')) {
+          Swal.fire({
+            title: '¡Error!',
+            text: 'Por favor, corrige los errores en el formulario.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar'
+          });
+    } else {
+      setIsLoading(true);
       try {
-        const response = await login(email, password);
-        localStorage.setItem('user', JSON.stringify(response));
+        await validateCredentials(sanitizedEmail, sanitizedPassword);
 
-        const userRole = response.role;
-        if (userRole === 'ROLE_ADMIN') {
-          navigate('/date-of-the-day'); 
-        } else if (userRole === 'ROLE_USER') {
-          navigate('/');
-        } else if (userRole === 'ROLE_WINDOW') {
-          navigate('/service-system');
-        } else {
-          navigate('/'); 
-        }
+        await sendOtp(sanitizedEmail);
 
-        Swal.fire('Éxito', 'Inicio de sesión exitoso', 'success');
+        Swal.fire('Éxito', 'Código de verificación enviado a su correo.', 'success');
+        navigate('/verify-otp', { state: { email: sanitizedEmail } });
       } catch (error) {
-        Swal.fire('Error', error, 'error'); 
+        setAttempts((prevAttempts) => {
+          const prevCount = prevAttempts[sanitizedEmail]?.count || 0;
+          const newCount = prevCount + 1;
+
+          const updatedAttempts = {
+            ...prevAttempts,
+            [sanitizedEmail]: {
+              count: newCount,
+              blockedUntil: newCount >= 3 ? Date.now() + 30 * 60 * 1000 : null,
+            },
+          };
+
+          if (newCount === 3) {
+            Swal.fire('Bloqueado', 'Ha alcanzado el límite de intentos fallidos. Su correo ha sido bloqueado durante 30 minutos.', 'error');
+          } else {
+            Swal.fire('Error', error || 'Credenciales incorrectas. Intente nuevamente.', 'error');
+          }
+
+          return updatedAttempts;
+        });
+      } finally {
+        setIsLoading(false);
       }
     }
   };
+
+  const isFormInvalid = 
+  email.trim() === '' || 
+  password.trim() === '' || 
+  errors.email !== '' || 
+  errors.password !== '';
 
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100">
@@ -91,32 +134,45 @@ const Login = () => {
 
             <div className="mb-4">
               <label htmlFor="password" className="form-label">Contraseña</label>
-              <input
-                type="password"
-                id="password"
-                className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                placeholder="Ingrese su contraseña"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onBlur={(e) => validateField('password', e.target.value)}
-              />
-              {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+              <div className="input-group">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                  placeholder="Ingrese su contraseña"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onBlur={(e) => validateField('password', e.target.value)}
+                />
+                <button 
+                  type="button" 
+                  className="btn btn-outline-secondary" 
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+                {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+              </div>
             </div>
 
-            <button type="submit" className="btn btn-primary w-100">
-              Iniciar sesión
+            <button
+              type="submit"
+              className="btn btn-primary w-100"
+              disabled={isLoading || isFormInvalid}
+            >
+              {isLoading ? 'Enviando...' : 'Iniciar sesión'}
             </button>
           </form>
 
           <div className="mt-3 text-center">
             <p className="text-muted">
-              ¿No tiene una cuenta? <a href="/register" className="link-primary">Cree una.</a>
+              ¿No tiene una cuenta? <a onClick={() => navigate('/register')} className="link-primary" style={{ cursor: 'pointer' }}>Cree una.</a>
             </p>
             <p className="text-muted">
-              <a href="/reset-password" className="link-primary">¿Olvidaste tu contraseña?</a>
+              <a onClick={() => navigate('/reset-password')} className="link-primary" style={{ cursor: 'pointer' }}>¿Olvidaste tu contraseña?</a>
             </p>
           </div>
-          <div className='d-flex justify-content-center mt-1'>
+          <div className="d-flex justify-content-center mt-1">
             <BackToHomeButton />
           </div>
         </div>

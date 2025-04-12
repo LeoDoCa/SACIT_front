@@ -4,7 +4,6 @@ import { validateToken, resetPassword } from '../config/http-client/authService.
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import { Eye, EyeOff, AlertTriangle } from 'react-feather';
-import styles from '../assets/css/auth/reset-password.module.css';
 
 import usePasswordValidation from '../hooks/usePasswordValidation.jsx';
 import useConfirmPasswordValidation from '../hooks/useConfirmPasswordValidation.jsx';
@@ -48,39 +47,39 @@ const ResetPasswordForm = () => {
     }
   };
 
+  const validateField = (name, value) => {
+    let error = '';
   
-  const validateForm = () => {
-    const sanitizedPassword = DOMPurify.sanitize(formData.password);
-    const sanitizedConfirmPassword = DOMPurify.sanitize(formData.confirmPassword);
+    if (name === 'password') {
+      if (value.trim() === '') {
+        error = 'La contraseña es obligatoria';
+      } else {
+        const passwordError = validatePassword(value);
+        if (passwordError) error = passwordError;
+      }
+    }
+
+    if (name === 'confirmPassword') {
+      validateConfirmPassword(value);
+      error = confirmPasswordError;
+    }
   
-    const passwordError = sanitizedPassword.trim() === ''
-      ? 'La contraseña es obligatoria'
-      : validatePassword(sanitizedPassword);
-  
-    const confirmPasswordError = sanitizedConfirmPassword.trim() === ''
-      ? 'La confirmación de la contraseña es obligatoria'
-      : sanitizedConfirmPassword !== sanitizedPassword
-        ? 'Las contraseñas no coinciden'
-        : '';
-  
-    const newErrors = {
-      password: passwordError,
-      confirmPassword: confirmPasswordError,
-    };
-  
-    setErrors(newErrors);
-  
-    return !Object.values(newErrors).some(error => error !== '');
+    setErrors(prev => ({ ...prev, [name]: error }));
   };
+
+  const validateForm = () => {
+    validateField('password', formData.password);
+    validateField('confirmPassword', formData.confirmPassword);
   
+    return Object.values(errors).every(err => !err);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-
-    if (name === 'password' || name === 'confirmPassword') {
-      validateForm();
-    }
+    const sanitizedValue = DOMPurify.sanitize(value);
+  
+    setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
+    validateField(name, sanitizedValue);
   };
   
 
@@ -190,7 +189,8 @@ const ResetPasswordForm = () => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Ingresa tu nueva contraseña"
-                  onBlur={validateForm}
+                  onBlur={(e) => validateField(e.target.name, e.target.value)}
+                  onPaste={(e) => e.preventDefault()}
                 />
                 <button 
                   type="button" 
@@ -216,7 +216,8 @@ const ResetPasswordForm = () => {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="Confirma tu nueva contraseña"
-                  onBlur={validateForm}
+                  onBlur={(e) => validateField(e.target.name, e.target.value)}
+                  onPaste={(e) => e.preventDefault()}
                 />
                 <button 
                   type="button" 
@@ -233,15 +234,23 @@ const ResetPasswordForm = () => {
 
             <button 
               type="submit" 
-              className={`btn btn-primary w-100 py-2 ${styles['submit-btn']}`}
+              className="btn btn-primary w-100"
+              disabled={isLoading}
             >
-              Actualizar contraseña
+              {isLoading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Procesando...
+                </>
+              ) : (
+                'Actualizar contraseña'
+              )}
             </button>
           </form>
           
           <div className="mt-3 text-center">
             <p className="text-muted">
-              ¿Recuerdas tu contraseña? <a href="/login" className="link-primary">Inicia sesión</a>
+              ¿Recuerdas tu contraseña? <a onClick={() => navigate('/login')} className="link-primary" style={{ cursor: 'pointer' }}>Inicia sesión</a>
             </p>
           </div>
         </div>

@@ -7,6 +7,7 @@ import useTextFieldValidation from '../hooks/useTextFieldValidation';
 import { register } from '../config/http-client/authService';
 import Swal from 'sweetalert2';
 import DOMPurify from 'dompurify';
+import { Eye, EyeOff } from 'react-feather';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -17,6 +18,8 @@ const Register = () => {
   const validateEmail = useEmailValidation();
   const validatePassword = usePasswordValidation();
   const [confirmPasswordError, validateConfirmPassword] = useConfirmPasswordValidation(password);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const validateTextField = useTextFieldValidation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -170,30 +173,50 @@ const Register = () => {
 
             <div className="mb-3">
               <label htmlFor="password" className="form-label">Contraseña</label>
-              <input
-                type="password"
-                id="password"
-                className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                placeholder="Ingrese su contraseña"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onBlur={(e) => validateField('password', e.target.value)}
-              />
-              {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+              <div className="input-group">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                  placeholder="Ingrese su contraseña"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onBlur={(e) => validateField('password', e.target.value)}
+                  onPaste={(e) => e.preventDefault()}
+                />
+                <button 
+                  type="button" 
+                  className="btn btn-outline-secondary" 
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+                {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+              </div>
             </div>
 
             <div className="mb-4">
               <label htmlFor="confirmPassword" className="form-label">Confirmar contraseña</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                className={`form-control ${errors.confirmPassword ? 'is-invalid' : ''}`}
-                placeholder="Confirme su contraseña"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                onBlur={(e) => validateField('confirmPassword', e.target.value)}
-              />
-              {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
+              <div className="input-group">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  id="confirmPassword"
+                  className={`form-control ${errors.confirmPassword ? 'is-invalid' : ''}`}
+                  placeholder="Confirme su contraseña"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onBlur={(e) => validateField('confirmPassword', e.target.value)}
+                  onPaste={(e) => e.preventDefault()}
+                />
+                <button 
+                  type="button" 
+                  className="btn btn-outline-secondary" 
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+                {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
+              </div>
             </div>
 
             <button 
@@ -214,7 +237,7 @@ const Register = () => {
 
           <div className="mt-3 text-center">
             <p className="text-muted">
-              ¿Ya tienes una cuenta? <a href="/login" className="link-primary">Inicia sesión.</a>
+              ¿Ya tienes una cuenta? <a onClick={() => navigate('/login')} className="link-primary" style={{ cursor: 'pointer' }}>Inicia sesión.</a>
             </p>
           </div>
         </div>
