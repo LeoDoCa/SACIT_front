@@ -3,12 +3,10 @@ import UserCard from "../components/UserCard";
 import { Container, Row, Col } from "react-bootstrap";
 import UserSideBar from "../components/UserSideBar";
 import { Search, Calendar, FileText, Shield, Clock } from "lucide-react";
-import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const [visibleRequirements, setVisibleRequirements] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate();
 
   const toggleRequirements = (index) => {
     setVisibleRequirements((prev) => ({
@@ -318,14 +316,40 @@ const Home = () => {
             <Col md={4} className="mb-4">
               <h5 className="fw-bold mb-3">Enlaces rápidos</h5>
               <ul className="list-unstyled">
-                <li className="mb-2"><a onClick={() => {
-                  const startSection = document.getElementById("start");
-                  startSection.scrollIntoView({ behavior: "smooth" });
-                }} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Inicio</a></li>
-                <li className="mb-2"><a onClick={() => {
-                  const servicesSection = document.getElementById("services-section");
-                  servicesSection.scrollIntoView({ behavior: "smooth" });
-                }} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Servicios</a></li>
+                <li className="mb-2">
+                  <button 
+                    onClick={() => {
+                      const startSection = document.getElementById("start");
+                      startSection.scrollIntoView({ behavior: "smooth" });
+                    }} 
+                    className="text-white text-decoration-none btn btn-link" 
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: '0',
+                      textAlign: 'left'
+                    }}
+                  >
+                    Inicio
+                  </button>
+                </li>
+                <li className="mb-2">
+                  <button 
+                    onClick={() => {
+                      const servicesSection = document.getElementById("services-section");
+                      servicesSection.scrollIntoView({ behavior: "smooth" });
+                    }} 
+                    className="text-white text-decoration-none btn btn-link" 
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: '0',
+                      textAlign: 'left'
+                    }}
+                  >
+                    Servicios
+                  </button>
+                </li>
               </ul>
             </Col>
             <Col md={4} className="mb-4">
