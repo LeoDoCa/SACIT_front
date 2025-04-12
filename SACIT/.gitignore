@@ -14,7 +14,7 @@ dist-ssr
 .env*
 
 # Coverage y análisis
-scannerwork/
+.scannerwork/
 coverage/
 
 # Editor directories and files
