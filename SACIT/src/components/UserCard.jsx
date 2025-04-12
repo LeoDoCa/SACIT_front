@@ -2,8 +2,11 @@ import React from 'react';
 import { Card, Button, Nav } from 'react-bootstrap';
 import { FaFileAlt, FaChevronDown, FaChevronUp, FaCheck } from 'react-icons/fa';
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 
 function UserCard({ title, subtitle, price, requirements, showRequirements, toggleRequirements }) {
+  const navigate = useNavigate();
+
   return (
     <Card className="shadow-lg border-0 rounded-lg h-100">
       <Card.Body className="text-center d-flex flex-column justify-content-between">
@@ -50,7 +53,7 @@ function UserCard({ title, subtitle, price, requirements, showRequirements, togg
             </div>
           )}
 
-          <Nav.Link href="/schedule" className="btn btn-primary w-100 rounded-pill text-center">
+          <Nav.Link onClick={() => navigate('/schedule')} className="btn btn-primary w-100 rounded-pill text-center">
             <Button variant="primary" className="w-100 rounded-pill">
               Agendar
             </Button>
