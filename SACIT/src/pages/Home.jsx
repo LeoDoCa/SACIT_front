@@ -3,10 +3,12 @@ import UserCard from "../components/UserCard";
 import { Container, Row, Col } from "react-bootstrap";
 import UserSideBar from "../components/UserSideBar";
 import { Search, Calendar, FileText, Shield, Clock } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const [visibleRequirements, setVisibleRequirements] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const toggleRequirements = (index) => {
     setVisibleRequirements((prev) => ({
@@ -107,7 +109,7 @@ const Home = () => {
   return (
     <>
 
-      <section className="hero-section text-center py-5" style={{
+      <section id="start" className="hero-section text-center py-5" style={{
         background: "linear-gradient(135deg, #1e2a3a 0%,rgb(37, 73, 137) 100%)",
         color: "white",
         padding: "60px 0",
@@ -120,12 +122,19 @@ const Home = () => {
           <p className="lead fs-4 mt-3" style={{ maxWidth: "700px", margin: "0 auto", fontFamily: "'Roboto', sans-serif" }}>
             Gestiona tus trámites de forma rápida, sencilla y segura.
           </p>
-          <button className="btn btn-light btn-lg mt-4 rounded-pill px-4 py-2" style={{
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-            fontWeight: "600",
-            transition: "all 0.3s ease"
-          }}>
-            Comenzar ahora
+          <button
+              className="btn btn-light btn-lg mt-4 rounded-pill px-4 py-2"
+              style={{
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                  fontWeight: "600",
+                  transition: "all 0.3s ease"
+              }}
+              onClick={() => {
+                  const servicesSection = document.getElementById("services-section");
+                  servicesSection.scrollIntoView({ behavior: "smooth" });
+              }}
+          >
+              Comenzar ahora
           </button>
         </Container>
       </section>
@@ -238,7 +247,7 @@ const Home = () => {
         </Container>
       </section>
 
-      <Container className="py-5">
+      <Container id="services-section" className="py-5">
         <div className="services-header text-center mb-5">
           <h2 className="fw-bold" style={{ fontFamily: "'Montserrat', sans-serif", color: "#1e3c72" }}>Nuestros Servicios</h2>
           <p className="text-muted" style={{ maxWidth: "700px", margin: "0 auto" }}>Explora nuestra amplia gama de servicios diseñados para facilitar tus trámites</p>
@@ -309,14 +318,20 @@ const Home = () => {
             <Col md={4} className="mb-4">
               <h5 className="fw-bold mb-3">Enlaces rápidos</h5>
               <ul className="list-unstyled">
-                <li className="mb-2"><a href="#" className="text-white text-decoration-none">Inicio</a></li>
-                <li className="mb-2"><a href="#" className="text-white text-decoration-none">Servicios</a></li>
+                <li className="mb-2"><a onClick={() => {
+                  const startSection = document.getElementById("start");
+                  startSection.scrollIntoView({ behavior: "smooth" });
+                }} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Inicio</a></li>
+                <li className="mb-2"><a onClick={() => {
+                  const servicesSection = document.getElementById("services-section");
+                  servicesSection.scrollIntoView({ behavior: "smooth" });
+                }} className="text-white text-decoration-none" style={{ cursor: 'pointer' }}>Servicios</a></li>
               </ul>
             </Col>
             <Col md={4} className="mb-4">
               <h5 className="fw-bold mb-3">Contacto</h5>
               <p className="mb-1">Email: sacit3mail@gmail.com</p>
-              <p className="mb-1">Teléfono: (55) 1234-5678</p>
+              <p className="mb-1">Teléfono: (+52) 7771234567</p>
             </Col>
           </Row>
           <hr className="my-4" style={{ opacity: "0.2" }} />
