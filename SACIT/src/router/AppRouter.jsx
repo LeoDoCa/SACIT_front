@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import React from 'react';
 
 import Login from "../auth/Login.jsx";
+import LoginWith2FA from "../auth/LoginWith2FA.jsx";
 import ResetPassword from "../auth/ResetPassword.jsx";
 import Register from "../auth/Register.jsx";
 
@@ -57,6 +58,7 @@ const RoutesComponent = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/verify-otp" element={<LoginWith2FA />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/register" element={<Register />} />
       <Route path="/reset-password/:token" element={<ResetPasswordForm />} />

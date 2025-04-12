@@ -9,10 +9,44 @@ export const login = async (email, password) => {
     }
     return response;
   } catch (error) {
-    console.error("Error en la solicitud de inicio de sesión:", error); 
     throw error.response?.data?.message || "Error al iniciar sesión. Por favor, verifica tus credenciales.";
   }
 };
+
+export const validateCredentials = async (email, password) => {
+  try {
+    const response = await AxiosClient.post("/validate-credentials", { email, password });
+    return response; 
+  } catch (error) {
+    throw error.response?.data?.message || "Error al validar credenciales.";
+  }
+};
+
+export const sendOtp = async (email) => {
+  try {
+    const response = await AxiosClient.post("/send-otp", { email });
+    return response; 
+  } catch (error) {
+    throw error.response?.data?.message || "Error al enviar el código de verificación.";
+  }
+};
+
+export const verifyOtpAndLogin = async (email, otp) => {
+  try {
+    const response = await AxiosClient.post("/verify-otp", { email, otp });
+    const { accessToken } = response;
+
+    if (accessToken) {
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("user", JSON.stringify(response));
+    }
+
+    return response;
+  } catch (error) {
+    throw error.response?.data?.message || "Error al verificar el código de verificación o al iniciar sesión.";
+  }
+};
+
 
 export const logout = async () => {
   try {
@@ -33,7 +67,6 @@ export const logout = async () => {
 
     return true; 
   } catch (error) {
-    console.error("Error al cerrar sesión:", error);
     throw error.response?.data?.message || "Hubo un problema al cerrar sesión.";
   }
 };
@@ -43,7 +76,6 @@ export const register = async (userData) => {
     const response = await AxiosClient.post("/register", userData);
     return response;
   } catch (error) {
-    console.error("Error en la solicitud de registro:", error);
     throw error.response?.data?.message || "Error al registrar usuario. Por favor, inténtalo de nuevo más tarde.";
   }
 };
@@ -66,7 +98,6 @@ export const requestPasswordReset = async (email) => {
     const response = await AxiosClient.post("/recover-password-email", { email });
     return response;
   } catch (error) {
-    console.error("Error al solicitar restablecimiento de contraseña:", error);
     throw error.response?.data?.message || "Error al solicitar restablecimiento de contraseña.";
   }
 };
@@ -76,7 +107,6 @@ export const validateToken = async (token) => {
     const response = await AxiosClient.get(`/validate-token?token=${token}`);
     return response;
   } catch (error) {
-    console.error("Error al validar el token:", error);
     throw error.response?.data?.message || "Token inválido o expirado.";
   }
 };
@@ -88,7 +118,6 @@ export const resetPassword = async (token, password) => {
     });
     return response;
   } catch (error) {
-    console.error("Error al restablecer contraseña:", error);
     throw error.response?.data?.message || "Error al restablecer contraseña.";
   }
 };
@@ -107,7 +136,6 @@ export const updateProfile = async (userData) => {
     
     return response;
   } catch (error) {
-    console.error("Error al actualizar perfil:", error);
     throw error.response?.data?.message || "Error al actualizar perfil.";
   }
 };
@@ -120,7 +148,6 @@ export const changePassword = async (currentPassword, newPassword) => {
     });
     return response;
   } catch (error) {
-    console.error("Error al cambiar contraseña:", error);
     throw error.response?.data?.message || "Error al cambiar contraseña.";
   }
 };
