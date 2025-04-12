@@ -3,7 +3,7 @@ import { useState } from 'react';
 const useFormValidation = () => {
   const [errors, setErrors] = useState({});
 
-  const scriptInjectionRegex = /<.*?>|<script.*?>.*?<\/script>/i;
+  const scriptInjectionRegex = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/i;
 
   const getErrorMessage = (fieldName, customMessage, type) => {
     const defaultMessages = {
