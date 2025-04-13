@@ -115,7 +115,6 @@ const RegisterUser = () => {
           confirmButtonText: 'Aceptar',
         });
 
-        // Limpiar los campos del formulario después del registro exitoso
         setFormData({
           nombre: '',
           apellidos: '',
