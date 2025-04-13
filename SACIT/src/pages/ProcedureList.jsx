@@ -245,7 +245,7 @@ const ListaTramites = () => {
                                     <tr key={tramite.uuid}>
                                         <td>{tramite.name}</td>
                                         <td>{formatCost(tramite.cost)}</td>
-                                        <td>{formatEstimatedTime(tramite.estimatedTime)}</td>
+                                        <td>{formatEstimatedTime(tramite.stimatedTime)}</td>
                                         <td className="text-center">
                                             <Button
                                                 variant="warning"
@@ -313,7 +313,7 @@ const ListaTramites = () => {
                             <Form.Group className="mb-3">
                                 <Form.Label>Tiempo estimado</Form.Label>
                                 <Form.Select
-                                    value={selectedTramite.estimatedTime}
+                                    value={selectedTramite.stimatedTime}
                                     onChange={(e) => handleChange(e, 'estimatedTime')}
                                 >
                                     <option value="15">15 minutos</option>
