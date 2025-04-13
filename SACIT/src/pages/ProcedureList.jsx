@@ -36,16 +36,15 @@ const ListaTramites = () => {
 
             const response = await axios.get(apiUrl, config);
 
-            // Asegúrate de acceder a la propiedad `data` dentro del objeto de respuesta
-            const tramitesData = response.data?.data || []; // Si no existe `data`, usa un arreglo vacío
+            const tramitesData = response.data?.data || []; 
             console.log('Trámites cargados:', tramitesData);
 
-            setTramites(tramitesData); // Asigna el arreglo de trámites correctamente
+            setTramites(tramitesData); 
             setError(null);
         } catch (err) {
             console.error('Error al cargar los trámites:', err);
             setError('No se pudieron cargar los trámites. Por favor, intente de nuevo más tarde.');
-            setTramites([]); // Limpia los trámites en caso de error
+            setTramites([]); 
         } finally {
             setLoading(false);
         }
@@ -91,7 +90,6 @@ const ListaTramites = () => {
 
             await axios.put(apiUrl, submissionData, config);
 
-            // Actualizar el estado local con los nuevos valores
             setTramites((prevTramites) =>
                 prevTramites.map((tramite) =>
                     tramite.uuid === selectedTramite.uuid
