@@ -12,7 +12,7 @@ import useConfirmPasswordValidation from '../hooks/useConfirmPasswordValidation'
 
 import DOMPurify from 'dompurify';
 
-const AdminUsersList = () => {
+const RegularUsersList = () => {
     const API_URL = import.meta.env.VITE_SERVER_URL;
 
     const [formData, setFormData] = useState({
@@ -25,7 +25,7 @@ const AdminUsersList = () => {
 
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(true);
-    const [adminUsers, setAdminUsers] = useState([]);
+    const [regularUsers, setRegularUsers] = useState([]);
 
     const validateNombre = useTextFieldValidation(formData.name, 'name', setErrors);
     const validateApellido = useTextFieldValidation(formData.lastName, 'lastName', setErrors);
@@ -37,10 +37,10 @@ const AdminUsersList = () => {
     const [selectedUser, setSelectedUser] = useState(null);
 
     useEffect(() => {
-        fetchAdminUsers();
+        fetchRegularUsers();
     }, []);
 
-    const fetchAdminUsers = async () => {
+    const fetchRegularUsers = async () => {
         try {
             setLoading(true);
             const token = localStorage.getItem('accessToken');
@@ -50,8 +50,8 @@ const AdminUsersList = () => {
                 },
             });
 
-            const adminOnlyUsers = response.data.filter(user => user.role.role === 'ROLE_ADMIN');
-            setAdminUsers(adminOnlyUsers);
+            const regularOnlyUsers = response.data.filter(user => user.role.role === 'ROLE_USER');
+            setRegularUsers(regularOnlyUsers);
         } catch (error) {
             if (error.response && error.response.status === 401) {
                 Swal.fire({
@@ -65,7 +65,7 @@ const AdminUsersList = () => {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'No se pudieron cargar los administradores.',
+                    text: 'No se pudieron cargar los usuarios regulares.',
                 });
             }
         } finally {
@@ -74,14 +74,17 @@ const AdminUsersList = () => {
     };
 
     const handleEditar = (uuid) => {
-        const user = adminUsers.find((u) => u.uuid === uuid);
+        const user = regularUsers.find((u) => u.uuid === uuid);
+        if (!user) {
+            return;
+        }
+
         setSelectedUser(user);
         setFormData({
             name: user.name,
             lastName: user.lastName,
-            email: user.email,
             password: '',
-            confirmarContrasena: ''
+            confirmarContrasena: '',
         });
         setShowModal(true);
     };
@@ -109,18 +112,18 @@ const AdminUsersList = () => {
                 Swal.fire({
                     icon: 'success',
                     title: '¡Éxito!',
-                    text: 'Administrador actualizado correctamente.',
+                    text: 'Usuario actualizado correctamente.',
                 });
 
                 setShowModal(false);
                 setSelectedUser(null);
-                fetchAdminUsers();
+                fetchRegularUsers();
             } catch (error) {
-                console.error('Error updating admin:', error);
+                console.error('Error updating user:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'No se pudo actualizar el administrador. Verifica los datos e inténtalo de nuevo.',
+                    text: 'No se pudo actualizar el usuario. Verifica los datos e inténtalo de nuevo.',
                 });
             }
         } else {
@@ -152,13 +155,16 @@ const AdminUsersList = () => {
     const validateForm = () => {
         let newErrors = {};
 
-        if (!formData.name.trim()) newErrors.name = 'El nombre es obligatorio.';
-        if (!formData.lastName.trim()) newErrors.lastName = 'El apellido es obligatorio.';
+        const nameError = validateNombre(formData.name);
+        if (nameError) newErrors.name = nameError;
+
+        const lastNameError = validateApellido(formData.lastName);
+        if (lastNameError) newErrors.lastName = lastNameError;
 
         if (formData.password) {
-            if (formData.password.length < 6) {
-                newErrors.password = 'La contraseña debe tener al menos 6 caracteres.';
-            }
+            const passwordError = validateContrasena(formData.password);
+            if (passwordError) newErrors.password = passwordError;
+
             if (formData.password !== formData.confirmarContrasena) {
                 newErrors.confirmarContrasena = 'Las contraseñas no coinciden.';
             }
@@ -191,18 +197,18 @@ const AdminUsersList = () => {
 
                 Swal.fire(
                     '¡Eliminado!',
-                    'El administrador ha sido eliminado.',
+                    'El usuario ha sido eliminado.',
                     'success'
                 );
 
-                fetchAdminUsers();
+                fetchRegularUsers();
             }
         } catch (error) {
-            console.error('Error deleting admin:', error);
+            console.error('Error deleting user:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'No se pudo eliminar el administrador.'
+                text: 'No se pudo eliminar el usuario.'
             });
         }
     };
@@ -237,11 +243,11 @@ const AdminUsersList = () => {
             </div>
 
             <div className="flex-grow-1 p-4" style={{ backgroundColor: '#f8f9fa' }}>
-                <h2 className="mb-4">Administradores</h2>
+                <h2 className="mb-4">Usuarios Regulares</h2>
 
                 {loading ? (
                     <div className="text-center">
-                        <p>Cargando administradores...</p>
+                        <p>Cargando usuarios...</p>
                     </div>
                 ) : (
                     <Table bordered hover className="bg-white">
@@ -254,8 +260,8 @@ const AdminUsersList = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {adminUsers.length > 0 ? (
-                                adminUsers.map((user) => (
+                            {regularUsers.length > 0 ? (
+                                regularUsers.map((user) => (
                                     <tr key={user.id}>
                                         <td>{user.name}</td>
                                         <td>{user.lastName}</td>
@@ -281,7 +287,7 @@ const AdminUsersList = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="4" className="text-center">No hay administradores disponibles</td>
+                                    <td colSpan="4" className="text-center">No hay usuarios regulares disponibles</td>
                                 </tr>
                             )}
                         </tbody>
@@ -291,7 +297,7 @@ const AdminUsersList = () => {
 
             <Modal show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Editar Administrador</Modal.Title>
+                    <Modal.Title>Editar Usuario Regular</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {selectedUser && (
@@ -310,7 +316,7 @@ const AdminUsersList = () => {
                             </Form.Group>
 
                             <Form.Group className="mb-3">
-                                <Form.Label>Apellido</Form.Label>
+                                <Form.Label>Apellidos</Form.Label>
                                 <Form.Control
                                     type="text"
                                     value={formData.lastName}
@@ -323,7 +329,7 @@ const AdminUsersList = () => {
                             </Form.Group>
 
                             <Form.Group className="mb-3">
-                                <Form.Label>Contraseña (opcional)</Form.Label>
+                                <Form.Label>Contraseña (Dejar en blanco para mantener la actual)</Form.Label>
                                 <Form.Control
                                     type="password"
                                     value={formData.password}
@@ -354,7 +360,7 @@ const AdminUsersList = () => {
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCancel}>
+                    <Button variant="secondary" onClick={() => setShowModal(false)}>
                         Cancelar
                     </Button>
                     <Button variant="primary" onClick={handleSaveChanges}>
@@ -366,4 +372,4 @@ const AdminUsersList = () => {
     );
 };
 
-export default AdminUsersList;
+export default RegularUsersList;
