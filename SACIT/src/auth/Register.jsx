@@ -235,9 +235,15 @@ const Register = () => {
             </button>
           </form>
 
-          <div className="mt-3 text-center">
+          <div className="mt-3 text-center d-flex flex-column align-items-center">
             <p className="text-muted">
-              ¿Ya tienes una cuenta? <a onClick={() => navigate('/login')} className="link-primary" style={{ cursor: 'pointer' }}>Inicia sesión.</a>
+              ¿Ya tienes una cuenta? 
+              <button 
+                onClick={() => navigate('/login')} 
+                className="btn btn-link p-0 link-primary mb-1 ms-1" 
+                style={{ cursor: 'pointer' }}>
+                Inicia sesión.
+              </button>
             </p>
           </div>
         </div>

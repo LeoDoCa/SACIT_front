@@ -105,7 +105,12 @@ const VerifyOtp = () => {
           </form>
           <div className="mt-3 text-center">
             <p className="text-muted">
-              Volver a <a onClick={() => navigate('/login')} className="link-primary" style={{ cursor: 'pointer' }}>Iniciar sesión.</a>
+              Volver a <button 
+                onClick={() => navigate('/login')} 
+                className="btn btn-link p-0" 
+                style={{ cursor: 'pointer' }}>
+                Iniciar sesión.
+              </button>
             </p>
           </div>
         </div>

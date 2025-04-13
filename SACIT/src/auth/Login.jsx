@@ -164,12 +164,22 @@ const Login = () => {
             </button>
           </form>
 
-          <div className="mt-3 text-center">
+          <div className="mt-3 text-center d-flex flex-column align-items-center">
             <p className="text-muted">
-              ¿No tiene una cuenta? <a onClick={() => navigate('/register')} className="link-primary" style={{ cursor: 'pointer' }}>Cree una.</a>
+              ¿No tiene una cuenta? <button 
+                onClick={() => navigate('/register')} 
+                className="btn btn-link p-0 mb-1" 
+                style={{ cursor: 'pointer' }}>
+                Cree una.
+              </button>
             </p>
             <p className="text-muted">
-              <a onClick={() => navigate('/reset-password')} className="link-primary" style={{ cursor: 'pointer' }}>¿Olvidaste tu contraseña?</a>
+              <button 
+                onClick={() => navigate('/reset-password')} 
+                className="btn btn-link p-0" 
+                style={{ cursor: 'pointer' }}>
+                ¿Olvidaste tu contraseña?
+              </button>
             </p>
           </div>
           <div className="d-flex justify-content-center mt-1">
