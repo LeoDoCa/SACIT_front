@@ -16,12 +16,13 @@ import ServiceSystem from "../pages/ServiceSystem.jsx";
 
 import ProcedureForm from "../pages/ProcedureForm.jsx";
 import ProcedureList from "../pages/ProcedureList.jsx";
-import WindowForm from "../pages/WindowForm.jsx";
 import WindowList from "../pages/WindowList.jsx";
 import UserForm from "../pages/UserForm.jsx";
 import UserList from "../pages/UserList.jsx";
 import DateOffTheDay from "../pages/DateOfTheDay.jsx";
 import ResetPasswordForm from '../auth/ResetPasswordForm.jsx';
+import WindowUsersList from '../pages/WindowUserList.jsx';
+import RegularUsersList from '../pages/RegularUserList.jsx';
 
 import TransactionHistory from "../pages/TransactionHistory.jsx";
 
@@ -36,7 +37,7 @@ const PrivateRoute = ({ children, role }) => {
 const UserOrGuestRoute = ({ children }) => {
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
-  
+
   if (!user) {
     return children;
   }
@@ -44,7 +45,7 @@ const UserOrGuestRoute = ({ children }) => {
   if (user.role === 'ROLE_USER') {
     return children;
   }
-  
+
   if (user.role === 'ROLE_ADMIN') {
     return <Navigate to="/date-off-the-day" />;
   } else if (user.role === 'ROLE_WINDOW') {
@@ -65,22 +66,22 @@ const RoutesComponent = () => {
       <Route path="*" element={<NotFound />} />
       <Route path="/500" element={<ServerError />} />
 
-      <Route 
-        path="/" 
+      <Route
+        path="/"
         element={
           <UserOrGuestRoute>
             <Home />
           </UserOrGuestRoute>
-        } 
+        }
       />
-      
-      <Route 
-        path="/schedule" 
+
+      <Route
+        path="/schedule"
         element={
           <UserOrGuestRoute>
             <ScheduleAnAppointment />
           </UserOrGuestRoute>
-        } 
+        }
       />
 
       <Route
@@ -118,14 +119,6 @@ const RoutesComponent = () => {
         }
       />
       <Route
-        path="/window-form"
-        element={
-          <PrivateRoute role="ROLE_ADMIN">
-            <WindowForm />
-          </PrivateRoute>
-        }
-      />
-      <Route
         path="/window-list"
         element={
           <PrivateRoute role="ROLE_ADMIN">
@@ -146,6 +139,22 @@ const RoutesComponent = () => {
         element={
           <PrivateRoute role="ROLE_ADMIN">
             <UserList />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/window-user-list"
+        element={
+          <PrivateRoute role="ROLE_ADMIN">
+            <WindowUsersList />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/regular-user-list"
+        element={
+          <PrivateRoute role="ROLE_ADMIN">
+            <RegularUsersList />
           </PrivateRoute>
         }
       />
