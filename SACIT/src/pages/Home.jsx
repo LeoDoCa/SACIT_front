@@ -21,7 +21,6 @@ const Home = () => {
     }));
   };
 
-  // Fetch trámites desde el backend
   useEffect(() => {
     const fetchProcedures = async () => {
       try {
@@ -29,7 +28,6 @@ const Home = () => {
         const response = await axios.get(`${API_URL}/procedures/`);
         const procedures = response.data?.data || [];
 
-        // Mapea los datos para que coincidan con las propiedades esperadas por las tarjetas
         const mappedProcedures = procedures.map((procedure) => ({
           id: procedure.id,
           title: procedure.name,
