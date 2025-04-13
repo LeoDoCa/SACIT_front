@@ -35,26 +35,30 @@ const ListaTramites = () => {
             };
 
             const response = await axios.get(apiUrl, config);
-            console.log('Trámites cargados:', response.data); 
-            setTramites(Array.isArray(response.data) ? response.data : []); 
+
+            // Asegúrate de acceder a la propiedad `data` dentro del objeto de respuesta
+            const tramitesData = response.data?.data || []; // Si no existe `data`, usa un arreglo vacío
+            console.log('Trámites cargados:', tramitesData);
+
+            setTramites(tramitesData); // Asigna el arreglo de trámites correctamente
             setError(null);
         } catch (err) {
             console.error('Error al cargar los trámites:', err);
             setError('No se pudieron cargar los trámites. Por favor, intente de nuevo más tarde.');
-            setTramites([]); 
+            setTramites([]); // Limpia los trámites en caso de error
         } finally {
             setLoading(false);
         }
     };
 
     const handleEditar = (uuid) => {
-        const tramite = tramites.find((t) => t.uuid === uuid); 
+        const tramite = tramites.find((t) => t.uuid === uuid);
 
         const requiredDocumentsNames = tramite.requieredDocuments
             ? tramite.requieredDocuments.map((doc) => doc.name)
             : [];
 
-        setSelectedTramite({ ...tramite, requiredDocumentsNames }); 
+        setSelectedTramite({ ...tramite, requiredDocumentsNames });
         setShowModal(true);
     };
 
@@ -87,9 +91,12 @@ const ListaTramites = () => {
 
             await axios.put(apiUrl, submissionData, config);
 
+            // Actualizar el estado local con los nuevos valores
             setTramites((prevTramites) =>
                 prevTramites.map((tramite) =>
-                    tramite.uuid === selectedTramite.uuid ? selectedTramite : tramite
+                    tramite.uuid === selectedTramite.uuid
+                        ? { ...selectedTramite, requieredDocuments }
+                        : tramite
                 )
             );
 
@@ -131,7 +138,7 @@ const ListaTramites = () => {
                     throw new Error('No se encontró un token de autenticación.');
                 }
 
-                const apiUrl = `${import.meta.env.VITE_SERVER_URL}/procedures/${uuid}`; 
+                const apiUrl = `${import.meta.env.VITE_SERVER_URL}/procedures/${uuid}`;
 
                 const config = {
                     headers: {
