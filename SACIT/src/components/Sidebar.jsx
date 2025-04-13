@@ -11,10 +11,10 @@ const Sidebar = () => {
     const navigate = useNavigate();
 
     return (
-        <div style={{ 
-            width: '200px', 
-            backgroundColor: '#1e2a3a', 
-            color: 'white', 
+        <div style={{
+            width: '200px',
+            backgroundColor: '#1e2a3a',
+            color: 'white',
             minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column'
@@ -25,7 +25,7 @@ const Sidebar = () => {
                     <h2 className="mb-0 text-white">SACIT</h2>
                 </div>
                 <h4 className="mb-2 text-white">Menú</h4>
-        
+
                 <div className="accordion accordion-flush" id="menuAccordion">
                     <div className="accordion-item" style={{ backgroundColor: '#2d3a4e' }}>
                         <h2 className="accordion-header">
@@ -51,29 +51,29 @@ const Sidebar = () => {
                         >
                             <div className="accordion-body p-0">
                                 <ul className="list-unstyled ms-3 mt-3">
-                                    <li className='mb-2'>
-                                        <a
+                                    <li className="mb-2">
+                                        <button
                                             onClick={() => navigate('/procedure-form')}
-                                            className="text-white text-decoration-none"
+                                            className="text-white text-decoration-none btn btn-link p-0"
                                             style={{ cursor: 'pointer' }}
                                         >
                                             Agregar
-                                        </a>
+                                        </button>
                                     </li>
                                     <li>
-                                        <a
+                                        <button
                                             onClick={() => navigate('/procedure-list')}
-                                            className="text-white text-decoration-none"
+                                            className="text-white text-decoration-none btn btn-link p-0"
                                             style={{ cursor: 'pointer' }}
                                         >
                                             Ver Trámites
-                                        </a>
+                                        </button>
                                     </li>
                                 </ul>
                             </div>
                         </div>
                     </div>
-        
+
                     <div className="accordion-item" style={{ backgroundColor: '#2d3a4e' }}>
                         <h2 className="accordion-header">
                             <button
@@ -98,29 +98,20 @@ const Sidebar = () => {
                         >
                             <div className="accordion-body p-0">
                                 <ul className="list-unstyled ms-3 mt-3">
-                                    <li className='mb-2'>
-                                        <a
-                                            onClick={() => navigate('/window-form')}
-                                            className="text-white text-decoration-none"
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            Agregar
-                                        </a>
-                                    </li>
                                     <li>
-                                        <a
+                                        <button
                                             onClick={() => navigate('/window-list')}
-                                            className="text-white text-decoration-none"
+                                            className="text-white text-decoration-none btn btn-link p-0"
                                             style={{ cursor: 'pointer' }}
                                         >
                                             Ver Ventanillas
-                                        </a>
+                                        </button>
                                     </li>
                                 </ul>
                             </div>
                         </div>
                     </div>
-        
+
                     <div className="accordion-item" style={{ backgroundColor: '#2d3a4e' }}>
                         <h2 className="accordion-header">
                             <button
@@ -146,19 +137,19 @@ const Sidebar = () => {
                             <div className="accordion-body p-0">
                                 <ul className="list-unstyled ms-3 mt-3">
                                     <li>
-                                        <a
+                                        <button
                                             onClick={() => navigate('/date-of-the-day')}
-                                            className="text-white text-decoration-none"
+                                            className="text-white text-decoration-none btn btn-link p-0"
                                             style={{ cursor: 'pointer' }}
                                         >
                                             Ver Citas
-                                        </a>
+                                        </button>
                                     </li>
                                 </ul>
                             </div>
                         </div>
                     </div>
-        
+
                     <div className="accordion-item mb-5" style={{ backgroundColor: '#2d3a4e' }}>
                         <h2 className="accordion-header">
                             <button
@@ -183,23 +174,41 @@ const Sidebar = () => {
                         >
                             <div className="accordion-body p-0">
                                 <ul className="list-unstyled ms-3 mt-3 pb-3">
-                                    <li className='mb-2'>
-                                        <a
+                                    <li className="mb-2">
+                                        <button
                                             onClick={() => navigate('/user-list')}
-                                            className="text-white text-decoration-none"
+                                            className="text-white text-decoration-none btn btn-link p-0"
                                             style={{ cursor: 'pointer' }}
                                         >
-                                            Ver Usuarios
-                                        </a>
+                                            Administradores
+                                        </button>
                                     </li>
                                     <li>
-                                        <a
+                                        <button
+                                            onClick={() => navigate('/window-user-list')}
+                                            className="text-white text-decoration-none btn btn-link p-0"
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            Usuarios Ventanillas
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button
+                                            onClick={() => navigate('/regular-user-list')}
+                                            className="text-white text-decoration-none btn btn-link p-0"
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            Usuarios Regulares
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button
                                             onClick={() => navigate('/user-form')}
-                                            className="text-white text-decoration-none"
+                                            className="text-white text-decoration-none btn btn-link p-0"
                                             style={{ cursor: 'pointer' }}
                                         >
                                             Crear Usuarios
-                                        </a>
+                                        </button>
                                     </li>
                                 </ul>
                             </div>
@@ -207,12 +216,12 @@ const Sidebar = () => {
                     </div>
                 </div>
             </div>
-        
+
             <div className="mt-auto" style={{ position: 'relative', width: '100%' }}>
                 <Button
                     variant="success"
                     className="d-flex align-items-center justify-content-center w-100 rounded-0 py-2 p-2"
-                    style={{height: '4rem'}}
+                    style={{ height: '4rem' }}
                     onClick={() => handleLogout(logout, dispatch, navigate)}
                 >
                     <span className="me-2">CERRAR SESIÓN</span>

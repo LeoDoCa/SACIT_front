@@ -76,21 +76,20 @@ const RegisterUser = () => {
     e.preventDefault();
 
     const sanitizedData = {
-      nombre: DOMPurify.sanitize(formData.nombre),
-      apellidos: DOMPurify.sanitize(formData.apellidos),
-      correo: DOMPurify.sanitize(formData.correo),
-      rol: DOMPurify.sanitize(formData.rol),
-      contrasena: DOMPurify.sanitize(formData.contrasena),
-      confirmarContrasena: DOMPurify.sanitize(formData.confirmarContrasena),
+      name: DOMPurify.sanitize(formData.nombre),
+      lastName: DOMPurify.sanitize(formData.apellidos), 
+      email: DOMPurify.sanitize(formData.correo), 
+      password: DOMPurify.sanitize(formData.contrasena),
+      role: { role: formData.rol === 'ventanilla' ? 'ROLE_WINDOW' : 'ROLE_ADMIN' },
     };
 
+
     let validationErrors = {
-      nombre: sanitizedData.nombre.trim() === '' ? 'El nombre es obligatorio' : '',
-      apellidos: sanitizedData.apellidos.trim() === '' ? 'El apellido es obligatorio' : '',
-      correo: sanitizedData.correo.trim() === '' ? 'El correo es obligatorio' : validateEmail(sanitizedData.correo),
-      rol: sanitizedData.rol.trim() === '' ? 'El rol es obligatorio' : '',
-      contrasena: sanitizedData.contrasena.trim() === '' ? 'La contraseña es obligatoria' : validatePassword(sanitizedData.contrasena),
-      confirmarContrasena: sanitizedData.confirmarContrasena.trim() === '' ? 'La confirmación de la contraseña es obligatoria' : confirmPasswordError,
+      name: sanitizedData.name.trim() === '' ? 'El nombre es obligatorio' : '',
+      lastName: sanitizedData.lastName.trim() === '' ? 'El apellido es obligatorio' : '',
+      email: sanitizedData.email.trim() === '' ? 'El correo es obligatorio' : validateEmail(sanitizedData.email),
+      password: sanitizedData.password.trim() === '' ? 'La contraseña es obligatoria' : validatePassword(sanitizedData.password),
+      confirmarContrasena: sanitizedData.password !== formData.confirmarContrasena ? 'Las contraseñas no coinciden' : '',
     };
 
     setErrors(validationErrors);
@@ -106,24 +105,19 @@ const RegisterUser = () => {
       setIsLoading(true);
 
       try {
-        await register({
-          nombre: sanitizedData.nombre,
-          apellidos: sanitizedData.apellidos,
-          correo: sanitizedData.correo,
-          rol: sanitizedData.rol,
-          contrasena: sanitizedData.contrasena,
-        });
+        const token = localStorage.getItem('accessToken'); 
+
+        await register(sanitizedData, token); 
 
         Swal.fire({
           title: 'Registro exitoso',
           text: 'Tu cuenta ha sido creada correctamente',
           icon: 'success',
-          confirmButtonText: 'Iniciar sesión',
-        }).then(() => {
-          navigate('/login');
+          confirmButtonText: 'Aceptar',
         });
       } catch (error) {
-        Swal.fire('Error', error.message || 'Error al crear la cuenta', 'error');
+        console.error('Error en el registro:', error.response?.data || error.message);
+        Swal.fire('Error', error.response?.data?.message || 'Error al crear la cuenta', 'error');
       } finally {
         setIsLoading(false);
       }
