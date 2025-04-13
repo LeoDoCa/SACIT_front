@@ -183,7 +183,7 @@ const Sidebar = () => {
                                             Administradores
                                         </button>
                                     </li>
-                                    <li>
+                                    <li className="mb-2">
                                         <button
                                             onClick={() => navigate('/window-user-list')}
                                             className="text-white text-decoration-none btn btn-link p-0"
@@ -192,7 +192,7 @@ const Sidebar = () => {
                                             Usuarios Ventanillas
                                         </button>
                                     </li>
-                                    <li>
+                                    <li className="mb-2">
                                         <button
                                             onClick={() => navigate('/regular-user-list')}
                                             className="text-white text-decoration-none btn btn-link p-0"
@@ -201,7 +201,7 @@ const Sidebar = () => {
                                             Usuarios Regulares
                                         </button>
                                     </li>
-                                    <li>
+                                    <li className="mb-2">
                                         <button
                                             onClick={() => navigate('/user-form')}
                                             className="text-white text-decoration-none btn btn-link p-0"
