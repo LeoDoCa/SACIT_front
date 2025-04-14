@@ -2,7 +2,6 @@ import React from 'react';
 import { Card } from 'react-bootstrap';
 
 const DateCard = ({ tipo, horario, windowNumber }) => {
-    // Formatear el horario
     const formattedHorario = new Intl.DateTimeFormat('es-ES', {
         hour: '2-digit',
         minute: '2-digit',
