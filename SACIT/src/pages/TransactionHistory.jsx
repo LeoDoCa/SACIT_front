@@ -102,7 +102,7 @@ function TransactionHistory() {
                 <div className="d-flex align-items-center">
                   <FaHistory size={24} className="me-2 text-primary" />
                   <h1 className="m-0" style={{ fontSize: '28px', fontWeight: '600', color: '#1e3a64' }}>
-                    Historial de Trámites
+                    Historial de Citas
                   </h1>
                 </div>
                 <Button
