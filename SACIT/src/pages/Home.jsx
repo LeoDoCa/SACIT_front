@@ -183,7 +183,7 @@ const Home = () => {
                     requirements={card.requirements}
                     showRequirements={!!visibleRequirements[card.uuid]}
                     toggleRequirements={() => toggleRequirements(card.uuid)}
-                    uuid={card.uuid} // Se pasa el uuid al UserCard
+                    uuid={card.uuid} 
                   />
                 </Col>
               ))
