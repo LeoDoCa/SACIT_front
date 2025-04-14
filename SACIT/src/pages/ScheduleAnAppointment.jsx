@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, Row, Col, Card, Button, Form, ProgressBar } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Form, ProgressBar, Modal } from 'react-bootstrap';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -47,11 +47,13 @@ const AgendarCita = () => {
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState('');
     const [availableTimes, setAvailableTimes] = useState([]);
+    const [identificacion, setIdentificacion] = useState(null);
+    const [recetaMedica, setRecetaMedica] = useState(null);
 
-    const [requiredDocuments, setRequiredDocuments] = useState([]);
-    const [uploadedFiles, setUploadedFiles] = useState({});
+    const [requiredDocuments, setRequiredDocuments] = useState([]); 
+    const [uploadedFiles, setUploadedFiles] = useState({}); 
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState(null); 
     const [currentStep, setCurrentStep] = useState(1);
 
     const [showEmailModal, setShowEmailModal] = useState(false);
@@ -330,6 +332,7 @@ const AgendarCita = () => {
         const isLoggedIn = !!accessToken;
 
         if (!isLoggedIn && !isUnloggedUserDataCaptured) {
+            console.log("Usuario no logueado, mostrando modal para capturar datos...");
             setShowEmailModal(true);
             return;
         }
@@ -342,6 +345,7 @@ const AgendarCita = () => {
         };
 
         formData.append('appointment', JSON.stringify(appointment));
+        console.log("Paso 1: Construcción del objeto de la cita", appointment);
 
         if (!isLoggedIn) {
             const unloggedUser = {
@@ -350,10 +354,11 @@ const AgendarCita = () => {
                 email: email,
             };
             formData.append('unloggedUser', JSON.stringify(unloggedUser));
+            console.log("Paso 2: Usuario no logueado, agregado unloggedUser:", unloggedUser);
         } else {
-            const userUuid = sessionStorage.getItem('userUuid');
+            const userUuid = localStorage.getItem('userUuid');
             if (!userUuid) {
-                console.error("Error: userUuid no está disponible en sessionStorage.");
+                console.error("Error: userUuid no está disponible en localStorage.");
                 Swal.fire({
                     title: 'Error',
                     text: 'No se pudo obtener la información del usuario. Por favor, inicia sesión nuevamente.',
@@ -363,28 +368,36 @@ const AgendarCita = () => {
                 return;
             }
             formData.append('userUuid', userUuid);
+            console.log("Paso 2: Usuario logueado, agregado userUuid:", userUuid);
         }
 
         formData.append('procedureUuid', tramiteUuid);
+        console.log("Paso 3: Agregado procedureUuid:", tramiteUuid);
 
         requiredDocuments.forEach((doc) => {
             formData.append('documentUuids', doc.uuid);
+            console.log("Paso 4: Agregado documentUuid:", doc.uuid);
         });
 
         Object.keys(uploadedFiles).forEach((docUuid) => {
             formData.append('files', uploadedFiles[docUuid]);
+            console.log("Paso 5: Agregado archivo para documentUuid:", docUuid, "Archivo:", uploadedFiles[docUuid]);
         });
 
+        console.log("Contenido de FormData:");
         for (let pair of formData.entries()) {
+            console.log(`${pair[0]}:`, pair[1]);
         }
 
         try {
+            console.log("Paso 6: Enviando solicitud POST al endpoint /appointments/");
             const response = await axios.post(`${API_URL}/appointments/`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
 
+            console.log("Paso 7: Respuesta exitosa del servidor:", response.data);
             Swal.fire({
                 title: '¡Éxito!',
                 text: `Cita agendada con éxito para el ${formatDate(selectedDate)} a las ${selectedTime}`,
@@ -395,6 +408,7 @@ const AgendarCita = () => {
             handleCancelar();
         } catch (error) {
             console.error("Error al agendar la cita:", error);
+            console.log("Paso 8: Respuesta del servidor con error:", error.response?.data);
             Swal.fire({
                 title: 'Error',
                 text: error.response?.data?.Mensaje || 'Hubo un problema al agendar la cita. Por favor, inténtalo de nuevo más tarde.',
@@ -412,19 +426,22 @@ const AgendarCita = () => {
         const isValid = await validateEmail();
 
         if (isValid) {
-            setIsUnloggedUserDataCaptured(true);
+            console.log("Email válido, cerrando modal y confirmando cita...");
+            setIsUnloggedUserDataCaptured(true); 
             setShowEmailModal(false);
 
             setTimeout(() => {
                 setIsSubmitting(false);
                 handleConfirmar();
-            }, 300);
+            }, 300); 
         } else {
+            console.log("Email inválido, mostrando error...");
             setIsSubmitting(false);
         }
     };
 
     const finishAppointmentBooking = () => {
+        console.log("finishAppointmentBooking: ejecutando confirmación de cita...");
         Swal.fire({
             title: '¡Éxito!',
             text: `Cita agendada con éxito para el ${formatDate(selectedDate)} a las ${selectedTime}`,

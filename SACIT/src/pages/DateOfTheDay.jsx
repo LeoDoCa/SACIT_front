@@ -17,12 +17,14 @@ const CitasDelDia = () => {
             const accessToken = localStorage.getItem('accessToken');
 
             try {
-                const response = await axios.get(`${API_URL}/api/appointments/today`, {
+                const response = await axios.get(`${API_URL}/appointments/today`, {
                     headers: {
                         Authorization: `Bearer ${accessToken}`,
                     },
                 });
-                setCitas(response.data);
+
+                console.log("Respuesta del servidor:", response.data); // Para depuración
+                setCitas(Array.isArray(response.data.data) ? response.data.data : []);
                 setLoading(false);
             } catch (err) {
                 console.error('Error al cargar las citas:', err);
@@ -65,7 +67,11 @@ const CitasDelDia = () => {
                     ) : (
                         citas.map((cita) => (
                             <Col key={cita.id} lg={4} md={6} className="mb-4">
-                                <CitaCard tipo={cita.status} horario={cita.startTime} />
+                                <CitaCard
+                                    tipo={cita.status}
+                                    horario={cita.startTime}
+                                    windowNumber={cita.windowNumber}
+                                />
                             </Col>
                         ))
                     )}
