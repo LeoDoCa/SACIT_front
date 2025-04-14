@@ -30,7 +30,7 @@ const Home = () => {
         const procedures = response.data?.data || [];
 
         const activeProcedures = procedures.filter(
-          (procedure) => procedure.status === "ACTIVE"
+          (procedure) => procedure.status === "Activo"
         );
 
         const mappedProcedures = activeProcedures.map((procedure) => ({
