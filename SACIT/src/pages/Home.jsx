@@ -197,6 +197,69 @@ const Home = () => {
           </Row>
         )}
       </Container>
+
+      <footer style={{
+         background: "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)",
+         color: "white",
+         borderRadius: "20px 20px 0 0",
+         marginTop: "30px",
+         padding: "40px 0 20px"
+       }}>
+         <Container>
+           <Row>
+             <Col md={4} className="mb-4">
+               <h5 className="fw-bold mb-3">SACIT</h5>
+               <p>Tu plataforma integral para la gestión de trámites gubernamentales.</p>
+             </Col>
+             <Col md={4} className="mb-4">
+               <h5 className="fw-bold mb-3">Enlaces rápidos</h5>
+               <ul className="list-unstyled">
+                 <li className="mb-2">
+                   <button
+                     onClick={() => {
+                       const startSection = document.getElementById("start");
+                       startSection.scrollIntoView({ behavior: "smooth" });
+                     }}
+                     className="text-white text-decoration-none btn btn-link"
+                     style={{
+                       background: 'none',
+                       border: 'none',
+                       padding: '0',
+                       textAlign: 'left'
+                     }}
+                   >
+                     Inicio
+                   </button>
+                 </li>
+                 <li className="mb-2">
+                   <button
+                     onClick={() => {
+                       const servicesSection = document.getElementById("services-section");
+                       servicesSection.scrollIntoView({ behavior: "smooth" });
+                     }}
+                     className="text-white text-decoration-none btn btn-link"
+                     style={{
+                       background: 'none',
+                       border: 'none',
+                       padding: '0',
+                       textAlign: 'left'
+                     }}
+                   >
+                     Servicios
+                   </button>
+                 </li>
+               </ul>
+             </Col>
+             <Col md={4} className="mb-4">
+               <h5 className="fw-bold mb-3">Contacto</h5>
+               <p className="mb-1">Email: sacit3mail@gmail.com</p>
+               <p className="mb-1">Teléfono: (+52) 7771234567</p>
+             </Col>
+           </Row>
+           <hr className="my-4" style={{ opacity: "0.2" }} />
+           <p className="text-center mb-0">© 2025 SACIT. Todos los derechos reservados.</p>
+         </Container>
+       </footer>
     </>
   );
 };
