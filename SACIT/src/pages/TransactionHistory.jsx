@@ -63,12 +63,17 @@ function TransactionHistory() {
 
         const histories = response.data?.data || [];
 
-        const mappedHistories = histories.map((history) => ({
-          procedureName: history.procedure?.name || 'Sin nombre',
-          windowNumber: history.procedure?.ventanilla || 'Sin ventanilla',
-          date: history.date || 'Fecha no disponible',
-          startTime: history.createdAt?.split('T')[1]?.split('.')[0] || 'Sin hora',
-        }));
+        const mappedHistories = histories.map((history) => {
+          const formattedDate = `${String(history.date[2]).padStart(2, '0')}/${String(history.date[1]).padStart(2, '0')}/${history.date[0]}`;
+          const formattedStartTime = `${String(history.startTime[0]).padStart(2, '0')}:${String(history.startTime[1]).padStart(2, '0')}`;
+        
+          return {
+            procedureName: history.procedureName || 'Sin nombre',
+            windowNumber: history.windowNumber || 'Sin ventanilla',
+            date: formattedDate,
+            startTime: formattedStartTime,
+          };
+        });
 
         setTransactions(mappedHistories);
         setError(null);
