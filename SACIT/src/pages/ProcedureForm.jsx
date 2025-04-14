@@ -119,7 +119,7 @@ const AddProcedure = () => {
           throw new Error('No se encontró un token de autenticación.');
         }
 
-        const apiUrl = `${import.meta.env.VITE_SERVER_URL}/procedures/`;
+        const apiUrl = `${import.meta.env.VITE_SERVER_URL}/procedures/new`;
 
         const config = {
           headers: {

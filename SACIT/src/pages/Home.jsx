@@ -26,7 +26,7 @@ const Home = () => {
       try {
         setLoading(true);
 
-        const response = await axios.get(`${API_URL}/procedures/`);
+        const response = await axios.get(`${API_URL}/procedures/all`);
         const procedures = response.data?.data || [];
 
         const mappedProcedures = procedures.map((procedure) => ({

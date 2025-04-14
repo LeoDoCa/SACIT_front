@@ -1,7 +1,12 @@
 import React from 'react';
 import { Card } from 'react-bootstrap';
 
-const DateCard = ({ tipo, horario }) => {
+const DateCard = ({ tipo, horario, windowNumber }) => {
+    const formattedHorario = new Intl.DateTimeFormat('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(new Date(0, 0, 0, horario[0], horario[1]));
+
     return (
         <Card className="shadow-sm">
             <Card.Body className="text-center">
@@ -24,9 +29,12 @@ const DateCard = ({ tipo, horario }) => {
                         <rect x="13" y="14" width="4" height="2" rx="0.5" fill="white" />
                     </svg>
                 </div>
-                <Card.Title className="fs-6 fw-bold">{tipo}</Card.Title>
+                <Card.Title className="fs-6 fw-bold">Estado: {tipo}</Card.Title>
                 <Card.Text className="text-muted small">
-                    Horario: {horario}
+                    Horario: {formattedHorario}
+                </Card.Text>
+                <Card.Text className="text-muted small">
+                    N° Ventanilla: {windowNumber}
                 </Card.Text>
             </Card.Body>
         </Card>

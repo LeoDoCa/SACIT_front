@@ -34,17 +34,16 @@ const ListaTramites = () => {
                 },
             };
 
-            const response = await axios.get(apiUrl, config);
-
-            const tramitesData = response.data?.data || []; 
+            const response = await axios.get(`${apiUrl}all`, config);
+            const tramitesData = response.data?.data || [];
             console.log('Trámites cargados:', tramitesData);
 
-            setTramites(tramitesData); 
+            setTramites(tramitesData);
             setError(null);
         } catch (err) {
             console.error('Error al cargar los trámites:', err);
             setError('No se pudieron cargar los trámites. Por favor, intente de nuevo más tarde.');
-            setTramites([]); 
+            setTramites([]);
         } finally {
             setLoading(false);
         }
