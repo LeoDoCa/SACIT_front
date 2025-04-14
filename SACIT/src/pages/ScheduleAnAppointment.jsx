@@ -273,18 +273,12 @@ const AgendarCita = () => {
         const accessToken = localStorage.getItem('accessToken');
         const isLoggedIn = !!accessToken;
 
-        console.log("isLoggedIn:", isLoggedIn);
-        console.log("isUnloggedUserCaptured:", isUnloggedUserCaptured);
-        console.log("isUnloggedUserDataCaptured:", isUnloggedUserDataCaptured);
 
-        // Si el usuario no está logueado y los datos no han sido capturados, muestra el modal
         if (!isLoggedIn && !isUnloggedUserCaptured && !isUnloggedUserDataCaptured) {
-            console.log("Usuario no logueado, mostrando modal para capturar datos...");
-            setShowEmailModal(true); // Abre el modal
+            setShowEmailModal(true); 
             return;
         }
 
-        // Si el usuario está logueado o los datos ya están capturados, continúa con la lógica
         const formData = new FormData();
 
         const appointment = {
@@ -360,21 +354,17 @@ const AgendarCita = () => {
         const isValid = await validateEmail();
 
         if (isValid) {
-            console.log("Email válido, capturando datos del usuario no logueado...");
 
             try {
-                // Cierra el modal antes de proceder
                 setShowEmailModal(false);
 
-                // Llama directamente a handleConfirmar con los datos capturados
-                await handleConfirmar(true); // Pasa true para indicar que los datos ya están capturados
+                await handleConfirmar(true);
             } catch (error) {
                 console.error("Error al confirmar la cita:", error);
             } finally {
-                setIsSubmitting(false); // Restablece el estado de envío
+                setIsSubmitting(false);
             }
         } else {
-            console.log("Email inválido, mostrando errores...");
             setIsSubmitting(false);
         }
     };
