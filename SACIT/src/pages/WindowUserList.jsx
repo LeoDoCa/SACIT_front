@@ -5,6 +5,8 @@ import Sidebar from '../components/Sidebar';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
+import DOMPurify from 'dompurify';
+
 
 const WindowUsersList = () => {
     const API_URL = import.meta.env.VITE_SERVER_URL;
@@ -177,6 +179,25 @@ const WindowUsersList = () => {
         }
     };
 
+    const handleChange = (e, field) => {
+        const value = DOMPurify.sanitize(e.target.value);
+        setFormData(prev => ({ ...prev, [field]: value }));
+
+        if (field === 'password' || field === 'confirmarContrasena') {
+            validateConfirmarContrasena(formData.confirmarContrasena);
+        }
+
+        setErrors(prevErrors => {
+            const newErrors = { ...prevErrors };
+            if (newErrors[field]) {
+                delete newErrors[field];
+            }
+            return newErrors;
+        });
+    };
+
+    const PASSWORD_MIN_LENGTH = 8;
+
     const validateForm = () => {
         let newErrors = {};
 
@@ -184,8 +205,8 @@ const WindowUsersList = () => {
         if (!formData.lastName.trim()) newErrors.lastName = 'El apellido es obligatorio.';
 
         if (formData.password) {
-            if (formData.password.length < 6) {
-                newErrors.password = 'La contraseña debe tener al menos 6 caracteres.';
+            if (formData.password.length < PASSWORD_MIN_LENGTH) {
+                newErrors.password = `La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres.`;
             }
             if (formData.password !== formData.confirmarContrasena) {
                 newErrors.confirmarContrasena = 'Las contraseñas no coinciden.';
@@ -315,7 +336,7 @@ const WindowUsersList = () => {
                                 <Form.Control
                                     type="text"
                                     value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    onChange={(e) => handleChange(e, 'name')}
                                     isInvalid={!!errors.name}
                                 />
                                 <Form.Control.Feedback type="invalid">
@@ -328,7 +349,7 @@ const WindowUsersList = () => {
                                 <Form.Control
                                     type="text"
                                     value={formData.lastName}
-                                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                                    onChange={(e) => handleChange(e, 'lastName')}
                                     isInvalid={!!errors.lastName}
                                 />
                                 <Form.Control.Feedback type="invalid">
@@ -341,7 +362,7 @@ const WindowUsersList = () => {
                                 <Form.Control
                                     type="password"
                                     value={formData.password}
-                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    onChange={(e) => handleChange(e, 'password')}
                                     isInvalid={!!errors.password}
                                     placeholder="Nueva contraseña (opcional)"
                                 />
@@ -356,7 +377,7 @@ const WindowUsersList = () => {
                                     <Form.Control
                                         type="password"
                                         value={formData.confirmarContrasena}
-                                        onChange={(e) => setFormData({ ...formData, confirmarContrasena: e.target.value })}
+                                        onChange={(e) => handleChange(e, 'confirmarContrasena')}
                                         isInvalid={!!errors.confirmarContrasena}
                                     />
                                     <Form.Control.Feedback type="invalid">
