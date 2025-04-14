@@ -224,6 +224,16 @@ const AgendarCita = () => {
                 });
             }
 
+            if (times.length === 0) {
+                Swal.fire({
+                    title: 'No hay horarios disponibles',
+                    text: 'Intenta hacer una cita en otro día.',
+                    icon: 'info',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
             setAvailableTimes(times);
             setSelectedTime('');
         } catch (error) {
