@@ -1,24 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Row, Col } from 'react-bootstrap';
 import Sidebar from '../components/Sidebar';
 import CitaCard from '../components/DateCard';
+import axios from 'axios';
 
 const CitasDelDia = () => {
-    const citas = [
-        { id: 1, tipo: 'Renovación de Pasaporte', horario: '00:00:00' },
-        { id: 2, tipo: 'Renovación de Pasaporte', horario: '00:00:00' },
-        { id: 3, tipo: 'Renovación de Pasaporte', horario: '00:00:00' },
-        { id: 4, tipo: 'Renovación de Pasaporte', horario: '00:00:00' },
-        { id: 5, tipo: 'Renovación de Pasaporte', horario: '00:00:00' },
-        { id: 6, tipo: 'Renovación de Pasaporte', horario: '00:00:00' },
-        { id: 7, tipo: 'Renovación de Pasaporte', horario: '00:00:00' },
-        { id: 8, tipo: 'Renovación de Pasaporte', horario: '00:00:00' },
-        { id: 9, tipo: 'Renovación de Pasaporte', horario: '00:00:00' },
-        { id: 10, tipo: 'Renovación de Pasaporte', horario: '00:00:00' },
-        { id: 11, tipo: 'Renovación de Pasaporte', horario: '00:00:00' },
-        { id: 12, tipo: 'Renovación de Pasaporte', horario: '00:00:00' }
-    ];
+    const [citas, setCitas] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const API_URL = import.meta.env.VITE_SERVER_URL;
+
+    useEffect(() => {
+        const fetchCitas = async () => {
+            const accessToken = localStorage.getItem('accessToken');
+
+            try {
+                const response = await axios.get(`${API_URL}/api/appointments/today`, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                });
+                setCitas(response.data);
+                setLoading(false);
+            } catch (err) {
+                console.error('Error al cargar las citas:', err);
+
+                if (err.response?.status === 404) {
+                    setCitas([]);
+                } else {
+                    setError('No se pudieron cargar las citas. Intenta nuevamente más tarde.');
+                }
+
+                setLoading(false);
+            }
+        };
+
+        fetchCitas();
+    }, []);
+
+    if (loading) {
+        return <div>Cargando citas...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
 
     return (
         <Container fluid className="p-0 d-flex" style={{ minHeight: '100vh' }}>
@@ -30,11 +58,17 @@ const CitasDelDia = () => {
                 <h2 className="mb-4">Citas del día</h2>
 
                 <Row>
-                    {citas.map((cita) => (
-                        <Col key={cita.id} lg={4} md={6} className="mb-4">
-                            <CitaCard tipo={cita.tipo} horario={cita.horario} />
-                        </Col>
-                    ))}
+                    {citas.length === 0 ? (
+                        <div className="text-center w-100">
+                            <p className="text-muted">No hay citas disponibles para hoy.</p>
+                        </div>
+                    ) : (
+                        citas.map((cita) => (
+                            <Col key={cita.id} lg={4} md={6} className="mb-4">
+                                <CitaCard tipo={cita.status} horario={cita.startTime} />
+                            </Col>
+                        ))
+                    )}
                 </Row>
             </div>
         </Container>

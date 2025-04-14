@@ -1,6 +1,7 @@
-import React, { useState, useRef, memo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, Row, Col, Card, Button, Form, ProgressBar, Modal } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Form, ProgressBar } from 'react-bootstrap';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -10,16 +11,47 @@ import * as Yup from 'yup';
 import EmailModal from '../components/EmailModal';
 import Swal from 'sweetalert2';
 import BackToHomeButton from '../components/BackToHomeButton';
+import axios from 'axios';
 
 const AgendarCita = () => {
+    const location = useLocation(); 
+    const tramiteUuid = location.state?.uuid; 
+    const API_URL = import.meta.env.VITE_SERVER_URL;
+
+    useEffect(() => {
+        const fetchTramiteData = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get(`${API_URL}/procedures/${tramiteUuid}`);
+                const tramite = response.data?.data;
+
+                if (tramite) {
+                    setRequiredDocuments(tramite.requieredDocuments || []);
+                }
+                setError(null);
+            } catch (err) {
+                console.error("Error al obtener los datos del trámite:", err);
+                setError("No se pudieron cargar los datos del trámite. Intente de nuevo más tarde.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (tramiteUuid) {
+            fetchTramiteData();
+        }
+    }, [tramiteUuid, API_URL]);
+
     const calendarRef = useRef(null);
 
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState('');
     const [availableTimes, setAvailableTimes] = useState([]);
-    const [identificacion, setIdentificacion] = useState(null);
-    const [recetaMedica, setRecetaMedica] = useState(null);
 
+    const [requiredDocuments, setRequiredDocuments] = useState([]);
+    const [uploadedFiles, setUploadedFiles] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [currentStep, setCurrentStep] = useState(1);
 
     const [showEmailModal, setShowEmailModal] = useState(false);
@@ -27,6 +59,10 @@ const AgendarCita = () => {
     const [emailError, setEmailError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [emailTouched, setEmailTouched] = useState(false);
+    const [nombres, setNombres] = useState('');
+    const [apellidos, setApellidos] = useState('');
+
+    const [isUnloggedUserDataCaptured, setIsUnloggedUserDataCaptured] = useState(false);
 
     const [scheduledAppointments, setScheduledAppointments] = useState([
         { date: '2025-04-07', time: '09:00', duration: 30 },
@@ -279,23 +315,93 @@ const AgendarCita = () => {
         setAvailableTimes([]);
         setIdentificacion(null);
         setRecetaMedica(null);
+        setUploadedFiles({});
+        setEmail('');
+        setEmailError('');
+        setEmailTouched(false);
+        setNombres('');
+        setApellidos('');
+        setIsUnloggedUserDataCaptured(false);
         setCurrentStep(1);
     };
 
-    const handleConfirmar = () => {
+    const handleConfirmar = async () => {
         const accessToken = localStorage.getItem('accessToken');
         const isLoggedIn = !!accessToken;
 
-        if (!isLoggedIn) {
-            setEmail('');
-            setEmailError('');
-            setEmailTouched(false);
+        if (!isLoggedIn && !isUnloggedUserDataCaptured) {
             setShowEmailModal(true);
             return;
         }
 
-        console.log("Usuario logueado, confirmando cita...");
-        finishAppointmentBooking();
+        const formData = new FormData();
+
+        const appointment = {
+            date: selectedDate,
+            startTime: `${selectedTime}:00`,
+        };
+
+        formData.append('appointment', JSON.stringify(appointment));
+
+        if (!isLoggedIn) {
+            const unloggedUser = {
+                name: nombres,
+                lastName: apellidos,
+                email: email,
+            };
+            formData.append('unloggedUser', JSON.stringify(unloggedUser));
+        } else {
+            const userUuid = sessionStorage.getItem('userUuid');
+            if (!userUuid) {
+                console.error("Error: userUuid no está disponible en sessionStorage.");
+                Swal.fire({
+                    title: 'Error',
+                    text: 'No se pudo obtener la información del usuario. Por favor, inicia sesión nuevamente.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar',
+                });
+                return;
+            }
+            formData.append('userUuid', userUuid);
+        }
+
+        formData.append('procedureUuid', tramiteUuid);
+
+        requiredDocuments.forEach((doc) => {
+            formData.append('documentUuids', doc.uuid);
+        });
+
+        Object.keys(uploadedFiles).forEach((docUuid) => {
+            formData.append('files', uploadedFiles[docUuid]);
+        });
+
+        for (let pair of formData.entries()) {
+        }
+
+        try {
+            const response = await axios.post(`${API_URL}/appointments/`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            Swal.fire({
+                title: '¡Éxito!',
+                text: `Cita agendada con éxito para el ${formatDate(selectedDate)} a las ${selectedTime}`,
+                icon: 'success',
+                confirmButtonText: 'Aceptar',
+            });
+
+            handleCancelar();
+        } catch (error) {
+            console.error("Error al agendar la cita:", error);
+            Swal.fire({
+                title: 'Error',
+                text: error.response?.data?.Mensaje || 'Hubo un problema al agendar la cita. Por favor, inténtalo de nuevo más tarde.',
+                icon: 'error',
+                confirmButtonText: 'Aceptar',
+            });
+        }
     };
 
     const handleEmailSubmit = async (e) => {
@@ -306,20 +412,19 @@ const AgendarCita = () => {
         const isValid = await validateEmail();
 
         if (isValid) {
-            console.log("Email válido, cerrando modal y confirmando cita...");
+            setIsUnloggedUserDataCaptured(true);
+            setShowEmailModal(false);
+
             setTimeout(() => {
                 setIsSubmitting(false);
-                setShowEmailModal(false);
-                finishAppointmentBooking();
-            }, 1000);
+                handleConfirmar();
+            }, 300);
         } else {
-            console.log("Email inválido, mostrando error...");
             setIsSubmitting(false);
         }
     };
 
     const finishAppointmentBooking = () => {
-        console.log("finishAppointmentBooking: ejecutando confirmación de cita...");
         Swal.fire({
             title: '¡Éxito!',
             text: `Cita agendada con éxito para el ${formatDate(selectedDate)} a las ${selectedTime}`,
@@ -346,7 +451,7 @@ const AgendarCita = () => {
         });
     };
 
-    const handleFileChange = (e, setFile) => {
+    const handleFileChange = (e, docUuid) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
 
@@ -373,7 +478,10 @@ const AgendarCita = () => {
                 return;
             }
 
-            setFile(file);
+            setUploadedFiles((prevFiles) => ({
+                ...prevFiles,
+                [docUuid]: file,
+            }));
         }
     };
 
@@ -500,70 +608,66 @@ const AgendarCita = () => {
                     <Card className="shadow-sm">
                         <Card.Body>
                             <h4 className="mb-4">Subir Documentos</h4>
-                            <Form>
-                                <Form.Group className="mb-4">
-                                    <Form.Label><strong>Identificación:</strong></Form.Label>
-                                    <Form.Control
-                                        type="file"
-                                        onChange={(e) => handleFileChange(e, setIdentificacion)}
-                                    />
-                                    <Form.Text className="text-muted">
-                                        Sube tu archivo oficial en formato PDF (máximo 0.5 MB).
-                                    </Form.Text>
-                                    {identificacion && (
-                                        <p className="mt-2 text-success">
-                                            Archivo subido: <strong>{identificacion.name}</strong>
-                                        </p>
-                                    )}
-                                </Form.Group>
-
-                                <Form.Group className="mb-4">
-                                    <Form.Label><strong>Receta Médica:</strong></Form.Label>
-                                    <Form.Control
-                                        type="file"
-                                        onChange={(e) => handleFileChange(e, setRecetaMedica)}
-                                    />
-                                    <Form.Text className="text-muted">
-                                        Sube tu archivo oficial en formato PDF (máximo 0.5 MB).
-                                    </Form.Text>
-                                    {recetaMedica && (
-                                        <p className="mt-2 text-success">
-                                            Archivo subido: <strong>{recetaMedica.name}</strong>
-                                        </p>
-                                    )}
-                                </Form.Group>
-
-                                <div className="d-flex justify-content-between mt-4">
-                                    <Button
-                                        variant="outline-secondary"
-                                        onClick={handleBack}
-                                    >
-                                        Atrás
-                                    </Button>
-                                    <div>
+                            {requiredDocuments.length > 0 ? (
+                                <Form>
+                                    {requiredDocuments.map((doc) => (
+                                        <Form.Group className="mb-4" key={doc.uuid}>
+                                            <Form.Label><strong>{doc.name}:</strong></Form.Label>
+                                            <Form.Control
+                                                type="file"
+                                                onChange={(e) => handleFileChange(e, doc.uuid)}
+                                            />
+                                            <Form.Text className="text-muted">
+                                                Sube tu archivo oficial en formato PDF (máximo 0.5 MB).
+                                            </Form.Text>
+                                            {uploadedFiles[doc.uuid] && (
+                                                <p className="mt-2 text-success">
+                                                    Archivo subido: <strong>{uploadedFiles[doc.uuid].name}</strong>
+                                                </p>
+                                            )}
+                                        </Form.Group>
+                                    ))}
+                                    <div className="d-flex justify-content-between mt-4">
                                         <Button
-                                            variant="secondary"
-                                            className="me-2"
-                                            onClick={handleCancelar}
+                                            variant="outline-secondary"
+                                            onClick={() => setCurrentStep(currentStep - 1)}
                                         >
-                                            Cancelar
+                                            Atrás
                                         </Button>
                                         <Button
                                             variant="primary"
-                                            onClick={handleNext}
-                                            disabled={!identificacion || !recetaMedica}
+                                            onClick={() => setCurrentStep(currentStep + 1)}
+                                            disabled={Object.keys(uploadedFiles).length !== requiredDocuments.length}
                                         >
                                             Siguiente
                                         </Button>
                                     </div>
-                                </div>
-                            </Form>
+                                </Form>
+                            ) : (
+                                <p className="text-muted">No se requieren documentos para este trámite.</p>
+                            )}
                         </Card.Body>
                     </Card>
                 </Col>
             </Row>
         );
     };
+
+    if (loading) {
+        return (
+            <Container className="py-5 text-center">
+                <p className="fs-5 text-muted">Cargando datos del trámite...</p>
+            </Container>
+        );
+    }
+
+    if (error) {
+        return (
+            <Container className="py-5 text-center">
+                <p className="fs-5 text-danger">{error}</p>
+            </Container>
+        );
+    }
 
     const Step3 = () => {
         return (
@@ -585,12 +689,12 @@ const AgendarCita = () => {
 
                             <div className="mb-4">
                                 <h5>Documentos Subidos</h5>
-                                <p className="mb-2">
-                                    <strong>Identificación:</strong> {identificacion ? identificacion.name : 'No subido'}
-                                </p>
-                                <p>
-                                    <strong>Receta Médica:</strong> {recetaMedica ? recetaMedica.name : 'No subido'}
-                                </p>
+                                {requiredDocuments.map((doc) => (
+                                    <p key={doc.uuid} className="mb-2">
+                                        <strong>{doc.name}:</strong>{' '}
+                                        {uploadedFiles[doc.uuid] ? uploadedFiles[doc.uuid].name : 'No subido'}
+                                    </p>
+                                ))}
                             </div>
 
                             <div className="d-flex justify-content-between mt-4">
@@ -647,6 +751,10 @@ const AgendarCita = () => {
                     handleEmailChange={handleEmailChange}
                     handleEmailBlur={handleEmailBlur}
                     handleEmailSubmit={handleEmailSubmit}
+                    nombres={nombres}
+                    setNombres={setNombres}
+                    apellidos={apellidos}
+                    setApellidos={setApellidos}
                 />
 
             </div>
