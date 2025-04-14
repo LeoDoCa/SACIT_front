@@ -149,6 +149,8 @@ const AdminUsersList = () => {
         });
     };
 
+    const PASSWORD_MIN_LENGTH = 8;
+
     const validateForm = () => {
         let newErrors = {};
 
@@ -156,8 +158,8 @@ const AdminUsersList = () => {
         if (!formData.lastName.trim()) newErrors.lastName = 'El apellido es obligatorio.';
 
         if (formData.password) {
-            if (formData.password.length < 6) {
-                newErrors.password = 'La contraseña debe tener al menos 6 caracteres.';
+            if (formData.password.length < PASSWORD_MIN_LENGTH) {
+                newErrors.password = `La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres.`;
             }
             if (formData.password !== formData.confirmarContrasena) {
                 newErrors.confirmarContrasena = 'Las contraseñas no coinciden.';
