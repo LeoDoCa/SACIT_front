@@ -54,7 +54,7 @@ const ListWindow = () => {
                 setVentanillas([]);
                 setError(null);
             } else {
-                console.error('Error fetching ventanillas:', error);
+                console.error('Error fetching ventanillas.');
                 setError('No se pudieron cargar las ventanillas. Por favor, intente de nuevo más tarde.');
             }
         } finally {
@@ -91,7 +91,7 @@ const ListWindow = () => {
 
             setUsuariosDisponibles(availableUsers);
         } catch (error) {
-            console.error('Error fetching usuarios disponibles:', error);
+            console.error('Error fetching usuarios disponibles.');
             setUsuariosDisponibles([]);
         }
     };
@@ -126,7 +126,7 @@ const ListWindow = () => {
                 fetchVentanillas(); 
             }
         } catch (error) {
-            console.error('Error eliminando ventanilla:', error);
+            console.error('Error eliminando ventanilla.');
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -178,7 +178,7 @@ const ListWindow = () => {
             setShowModal(false);
             fetchVentanillas();
         } catch (error) {
-            console.error('Error updating ventanilla:', error);
+            console.error('Error updating ventanilla.');
             Swal.fire({
                 icon: 'error',
                 title: 'Error',

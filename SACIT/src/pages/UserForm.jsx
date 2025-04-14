@@ -125,7 +125,7 @@ const RegisterUser = () => {
         });
         setErrors({});
       } catch (error) {
-        console.error('Error en el registro:', error.response?.data || error.message);
+        console.error('Error en el registro.');
         Swal.fire('Error', error.response?.data?.message || 'Error al crear la cuenta', 'error');
       } finally {
         setIsLoading(false);

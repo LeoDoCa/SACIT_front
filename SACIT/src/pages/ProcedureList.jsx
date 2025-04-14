@@ -36,12 +36,12 @@ const ListaTramites = () => {
 
             const response = await axios.get(`${apiUrl}all`, config);
             const tramitesData = response.data?.data || [];
-            console.log('Trámites cargados:', tramitesData);
+            console.log('Trámites cargados.');
 
             setTramites(tramitesData);
             setError(null);
         } catch (err) {
-            console.error('Error al cargar los trámites:', err);
+            console.error('Error al cargar los trámites.');
             setError('No se pudieron cargar los trámites. Por favor, intente de nuevo más tarde.');
             setTramites([]);
         } finally {
@@ -106,7 +106,7 @@ const ListaTramites = () => {
 
             setShowModal(false);
         } catch (error) {
-            console.error('Error al actualizar el trámite:', error);
+            console.error('Error al actualizar el trámite.');
             Swal.fire({
                 title: 'Error',
                 text: `No se pudo actualizar el trámite: ${error.response?.data?.message || error.message}`,
@@ -150,7 +150,7 @@ const ListaTramites = () => {
                 Swal.fire('¡Eliminado!', 'El trámite ha sido eliminado.', 'success');
             }
         } catch (error) {
-            console.error('Error al eliminar el trámite:', error);
+            console.error('Error al eliminar el trámite.');
             Swal.fire({
                 title: 'Error',
                 text: `No se pudo eliminar el trámite: ${error.response?.data?.message || error.message}`,

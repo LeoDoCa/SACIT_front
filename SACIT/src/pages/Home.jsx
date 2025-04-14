@@ -44,7 +44,7 @@ const Home = () => {
         setUserCards(mappedProcedures);
         setError(null);
       } catch (err) {
-        console.error("Error al cargar los trámites:", err);
+        console.error("Error al cargar los trámites.");
         setError("No se pudieron cargar los trámites. Intente de nuevo más tarde.");
       } finally {
         setLoading(false);
