@@ -192,7 +192,7 @@ const ServiceSystem = () => {
         </Navbar>
 
         <Container className="main-container">
-          <h2 className="text-center my-5">Trámites del día</h2>
+          <h2 className="text-center my-5">Citas del día</h2>
 
           <Row className="justify-content-center">
             {services.length > 0 ? (
