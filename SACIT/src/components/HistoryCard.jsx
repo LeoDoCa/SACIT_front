@@ -11,13 +11,16 @@ function HistoryCard({ transaction, index }) {
               <strong>Trámite:</strong> {transaction.procedureName}
             </p>
             <p className="mb-2">
-              <strong>Ventanilla:</strong> {transaction.windowNumber}
+              <strong>N° Ventanilla que atendió:</strong> {transaction.windowNumber}
             </p>
             <p className="mb-2">
-              <strong>Fecha de Cita:</strong> <span style={{ color: '#007bff' }}>{transaction.date}</span>
+              <strong>Fecha de la cita:</strong> <span style={{ color: '#007bff' }}>{transaction.date}</span>
+            </p>
+            <p className="mb-2">
+              <strong>Hora inicio de la cita:</strong> <span style={{ color: '#007bff' }}>{transaction.startTime}</span>
             </p>
             <p className="mb-0">
-              <strong>Hora inicio de la Cita:</strong> <span style={{ color: '#007bff' }}>{transaction.startTime}</span>
+              <strong>Hora de fin de la cita:</strong> <span style={{ color: '#007bff' }}>{transaction.endTime}</span>
             </p>
           </Col>
         </Row>
