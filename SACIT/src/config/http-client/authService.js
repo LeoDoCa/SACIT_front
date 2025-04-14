@@ -1,4 +1,5 @@
 import AxiosClient from "./axios-client";
+import { saveUserIdsToSession, clearUserIdsFromSession } from "./jwt-utils";
 
 export const login = async (email, password) => {
   try {
@@ -6,6 +7,7 @@ export const login = async (email, password) => {
     const { accessToken } = response; 
     if (accessToken) {
       localStorage.setItem("accessToken", accessToken);
+      saveUserIdsToSession(accessToken);
     }
     return response;
   } catch (error) {
@@ -39,6 +41,7 @@ export const verifyOtpAndLogin = async (email, otp) => {
     if (accessToken) {
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("user", JSON.stringify(response));
+      saveUserIdsToSession(accessToken);
     }
 
     return response;
@@ -64,6 +67,7 @@ export const logout = async () => {
 
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
+    clearUserIdsFromSession();
 
     return true; 
   } catch (error) {
