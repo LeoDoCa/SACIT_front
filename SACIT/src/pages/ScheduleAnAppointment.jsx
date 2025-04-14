@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useLocation } from 'react-router-dom'; 
+import { useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Row, Col, Card, Button, Form, ProgressBar, Modal } from 'react-bootstrap';
 import FullCalendar from '@fullcalendar/react';
@@ -14,8 +14,8 @@ import BackToHomeButton from '../components/BackToHomeButton';
 import axios from 'axios';
 
 const AgendarCita = () => {
-    const location = useLocation(); 
-    const tramiteUuid = location.state?.uuid; 
+    const location = useLocation();
+    const tramiteUuid = location.state?.uuid;
     const API_URL = import.meta.env.VITE_SERVER_URL;
 
     useEffect(() => {
@@ -50,10 +50,10 @@ const AgendarCita = () => {
     const [identificacion, setIdentificacion] = useState(null);
     const [recetaMedica, setRecetaMedica] = useState(null);
 
-    const [requiredDocuments, setRequiredDocuments] = useState([]); 
-    const [uploadedFiles, setUploadedFiles] = useState({}); 
+    const [requiredDocuments, setRequiredDocuments] = useState([]);
+    const [uploadedFiles, setUploadedFiles] = useState({});
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null); 
+    const [error, setError] = useState(null);
     const [currentStep, setCurrentStep] = useState(1);
 
     const [showEmailModal, setShowEmailModal] = useState(false);
@@ -66,29 +66,6 @@ const AgendarCita = () => {
 
     const [isUnloggedUserDataCaptured, setIsUnloggedUserDataCaptured] = useState(false);
 
-    const [scheduledAppointments, setScheduledAppointments] = useState([
-        { date: '2025-04-07', time: '09:00', duration: 30 },
-        { date: '2025-04-07', time: '10:00', duration: 45 },
-        { date: '2025-04-07', time: '11:00', duration: 60 },
-        { date: '2025-04-08', time: '09:30', duration: 30 },
-        { date: '2025-04-08', time: '11:00', duration: 60 },
-        { date: '2025-04-09', time: '10:15', duration: 45 },
-        { date: '2025-04-09', time: '13:00', duration: 30 },
-        { date: '2025-04-10', time: '09:00', duration: 30 },
-        { date: '2025-04-10', time: '12:00', duration: 45 },
-        { date: '2025-04-11', time: '10:30', duration: 30 },
-        { date: '2025-04-11', time: '14:00', duration: 60 },
-        { date: '2025-04-14', time: '09:45', duration: 30 },
-        { date: '2025-04-14', time: '11:00', duration: 60 },
-        { date: '2025-04-15', time: '10:00', duration: 30 },
-        { date: '2025-04-15', time: '13:00', duration: 45 },
-        { date: '2025-04-16', time: '09:30', duration: 30 },
-        { date: '2025-04-16', time: '11:00', duration: 60 },
-        { date: '2025-04-17', time: '10:15', duration: 45 },
-        { date: '2025-04-17', time: '12:00', duration: 30 },
-        { date: '2025-04-18', time: '09:00', duration: 30 },
-        { date: '2025-04-18', time: '14:00', duration: 45 },
-    ]);
 
     const isUserLoggedIn = () => {
         return false;
@@ -187,16 +164,14 @@ const AgendarCita = () => {
     };
 
 
-    const handleDateClick = (info) => {
+    const handleDateClick = async (info) => {
+
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
         const selectedDateObj = new Date(info.dateStr + "T00:00:00");
 
-        const todayTime = today.getTime();
-        const selectedTime = selectedDateObj.getTime();
-
-        if (selectedTime < todayTime) {
+        if (selectedDateObj < today) {
             Swal.fire({
                 title: 'Fecha no válida',
                 text: 'No puedes seleccionar días anteriores al actual.',
@@ -221,69 +196,27 @@ const AgendarCita = () => {
 
         setSelectedDate(info.dateStr);
 
-        const isToday = selectedDateObj.toDateString() === today.toDateString();
-
-        const times = [];
-        const startHour = 9;
-        const endHour = 15;
-
-        let currentHour = startHour;
-        let currentMinute = 0;
-
-        if (isToday) {
-            const now = new Date();
-
-            if (now.getHours() > startHour ||
-                (now.getHours() === startHour && now.getMinutes() > 0)) {
-
-                currentHour = now.getHours();
-
-                if (now.getMinutes() <= 30) {
-                    currentMinute = 30;
-                } else {
-                    currentHour += 1;
-                    currentMinute = 0;
-                }
-            }
-        }
-
-        const appointmentsForDay = scheduledAppointments.filter(
-            appointment => appointment.date === info.dateStr
-        );
-
-        while (currentHour < endHour || (currentHour === endHour && currentMinute === 0)) {
-            const timeSlot = new Date(selectedDateObj);
-            timeSlot.setHours(currentHour, currentMinute, 0, 0);
-
-            const slotEnd = new Date(timeSlot);
-            slotEnd.setMinutes(slotEnd.getMinutes() + 30);
-
-            const isSlotAvailable = !appointmentsForDay.some(appointment => {
-                const appointmentStart = new Date(`${appointment.date}T${appointment.time}`);
-                const appointmentEnd = new Date(appointmentStart);
-                appointmentEnd.setMinutes(appointmentEnd.getMinutes() + appointment.duration);
-
-                return (
-                    (timeSlot < appointmentEnd && slotEnd > appointmentStart)
-                );
+        try {
+            const response = await axios.post(`${API_URL}/availability/`, {
+                date: info.dateStr,
+                procedureUuid: tramiteUuid,
             });
 
-            if (isSlotAvailable) {
-                const formattedHour = currentHour.toString().padStart(2, '0');
-                const formattedMinute = currentMinute.toString().padStart(2, '0');
-                times.push(`${formattedHour}:${formattedMinute}`);
-            }
 
-            if (currentMinute === 30) {
-                currentMinute = 0;
-                currentHour++;
-            } else {
-                currentMinute = 30;
-            }
+            const times = response.data.data.availableTimes || [];
+
+            setAvailableTimes(times);
+
+            setSelectedTime('');
+        } catch (error) {
+            console.error("Error al obtener los horarios disponibles:", error);
+            Swal.fire({
+                title: 'Error',
+                text: 'No se pudieron cargar los horarios disponibles. Intente de nuevo más tarde.',
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+            });
         }
-
-        setAvailableTimes(times);
-        setSelectedTime('');
     };
 
     const handleNext = () => {
@@ -332,7 +265,6 @@ const AgendarCita = () => {
         const isLoggedIn = !!accessToken;
 
         if (!isLoggedIn && !isUnloggedUserDataCaptured) {
-            console.log("Usuario no logueado, mostrando modal para capturar datos...");
             setShowEmailModal(true);
             return;
         }
@@ -345,7 +277,6 @@ const AgendarCita = () => {
         };
 
         formData.append('appointment', JSON.stringify(appointment));
-        console.log("Paso 1: Construcción del objeto de la cita", appointment);
 
         if (!isLoggedIn) {
             const unloggedUser = {
@@ -354,9 +285,8 @@ const AgendarCita = () => {
                 email: email,
             };
             formData.append('unloggedUser', JSON.stringify(unloggedUser));
-            console.log("Paso 2: Usuario no logueado, agregado unloggedUser:", unloggedUser);
         } else {
-            const userUuid = localStorage.getItem('userUuid');
+            const userUuid = sessionStorage.getItem('userUuid');
             if (!userUuid) {
                 console.error("Error: userUuid no está disponible en localStorage.");
                 Swal.fire({
@@ -368,36 +298,28 @@ const AgendarCita = () => {
                 return;
             }
             formData.append('userUuid', userUuid);
-            console.log("Paso 2: Usuario logueado, agregado userUuid:", userUuid);
         }
 
         formData.append('procedureUuid', tramiteUuid);
-        console.log("Paso 3: Agregado procedureUuid:", tramiteUuid);
 
         requiredDocuments.forEach((doc) => {
             formData.append('documentUuids', doc.uuid);
-            console.log("Paso 4: Agregado documentUuid:", doc.uuid);
         });
 
         Object.keys(uploadedFiles).forEach((docUuid) => {
             formData.append('files', uploadedFiles[docUuid]);
-            console.log("Paso 5: Agregado archivo para documentUuid:", docUuid, "Archivo:", uploadedFiles[docUuid]);
         });
 
-        console.log("Contenido de FormData:");
         for (let pair of formData.entries()) {
-            console.log(`${pair[0]}:`, pair[1]);
         }
 
         try {
-            console.log("Paso 6: Enviando solicitud POST al endpoint /appointments/");
             const response = await axios.post(`${API_URL}/appointments/`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
 
-            console.log("Paso 7: Respuesta exitosa del servidor:", response.data);
             Swal.fire({
                 title: '¡Éxito!',
                 text: `Cita agendada con éxito para el ${formatDate(selectedDate)} a las ${selectedTime}`,
@@ -408,7 +330,6 @@ const AgendarCita = () => {
             handleCancelar();
         } catch (error) {
             console.error("Error al agendar la cita:", error);
-            console.log("Paso 8: Respuesta del servidor con error:", error.response?.data);
             Swal.fire({
                 title: 'Error',
                 text: error.response?.data?.Mensaje || 'Hubo un problema al agendar la cita. Por favor, inténtalo de nuevo más tarde.',
@@ -426,22 +347,24 @@ const AgendarCita = () => {
         const isValid = await validateEmail();
 
         if (isValid) {
-            console.log("Email válido, cerrando modal y confirmando cita...");
+            console.log("Email válido, capturando datos del usuario no logueado...");
             setIsUnloggedUserDataCaptured(true); 
-            setShowEmailModal(false);
 
-            setTimeout(() => {
-                setIsSubmitting(false);
-                handleConfirmar();
-            }, 300); 
+            try {
+                setShowEmailModal(false); 
+                await handleConfirmar(); 
+            } catch (error) {
+                console.error("Error al confirmar la cita:", error);
+            } finally {
+                setIsSubmitting(false); 
+            }
         } else {
-            console.log("Email inválido, mostrando error...");
+            console.log("Email inválido, mostrando errores...");
             setIsSubmitting(false);
         }
     };
 
     const finishAppointmentBooking = () => {
-        console.log("finishAppointmentBooking: ejecutando confirmación de cita...");
         Swal.fire({
             title: '¡Éxito!',
             text: `Cita agendada con éxito para el ${formatDate(selectedDate)} a las ${selectedTime}`,
@@ -544,15 +467,10 @@ const AgendarCita = () => {
                                 }}
                                 locale={esLocale}
                                 selectable={true}
-                                dateClick={(info) => handleDateClick(info)}
-                                events={scheduledAppointments.map((appointment) => ({
-                                    title: 'Cita',
-                                    start: `${appointment.date}T${appointment.time}`,
-                                    end: new Date(new Date(`${appointment.date}T${appointment.time}`).getTime() + appointment.duration * 60000).toISOString(),
-                                }))}
-                                height="auto"
+                                dateClick={(info) => {
+                                    handleDateClick(info);
+                                }} height="auto"
                                 themeSystem="bootstrap"
-                                eventColor="#003366"
                                 buttonText={{
                                     today: 'Hoy',
                                     month: 'Mes',
@@ -585,9 +503,11 @@ const AgendarCita = () => {
                                             onChange={(e) => setSelectedTime(e.target.value)}
                                         >
                                             <option value="">Seleccionar horario</option>
-                                            {availableTimes.map((time, index) => (
-                                                <option key={index} value={time}>{time}</option>
-                                            ))}
+                                            {availableTimes.map((time, index) => {
+                                                return (
+                                                    <option key={index} value={time}>{time}</option>
+                                                );
+                                            })}
                                         </Form.Select>
                                     </Form.Group>
                                 </>
