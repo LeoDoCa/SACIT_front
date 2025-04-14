@@ -68,7 +68,7 @@ const ListaTramites = () => {
             }
 
             const requieredDocuments = selectedTramite.requiredDocumentsNames.map((name, index) => ({
-                id: selectedTramite.requieredDocuments?.[index]?.id || null, // Mantener el ID si existe
+                id: selectedTramite.requieredDocuments?.[index]?.id || null, 
                 name,
             }));
 
