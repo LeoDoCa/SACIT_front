@@ -29,7 +29,6 @@ const Home = () => {
         const response = await axios.get(`${API_URL}/procedures/all`);
         const procedures = response.data?.data || [];
 
-        // Filtrar solo los trámites con estado "ACTIVE"
         const activeProcedures = procedures.filter(
           (procedure) => procedure.status === "ACTIVE"
         );
