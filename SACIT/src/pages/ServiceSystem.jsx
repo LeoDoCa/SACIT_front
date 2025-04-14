@@ -60,7 +60,7 @@ const ServiceSystem = () => {
 
         setServices(appointments);
       } catch (error) {
-        console.error('Error fetching appointments:', error.message);
+        console.error('Error fetching appointments.');
       }
     };
 
