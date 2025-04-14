@@ -9,8 +9,11 @@ import useCostFieldValidation from '../hooks/useCostFieldValidation.jsx';
 import DOMPurify from 'dompurify';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import { getUserIdFromSession } from './../config/http-client/jwt-utils.js';
 
 const AddProcedure = () => {
+  const adminId = getUserIdFromSession();
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -145,7 +148,7 @@ const AddProcedure = () => {
           estimatedTime: '30',
           creationDate: new Date().toISOString().split('T')[0],
           status: 'Activo',
-          creatorId: 1,
+          creatorId: adminId,
           requiredDocumentsNames: [''],
         });
       } catch (error) {
