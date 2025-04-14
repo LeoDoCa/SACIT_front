@@ -23,11 +23,9 @@ const CitasDelDia = () => {
                     },
                 });
 
-                console.log("Respuesta del servidor:", response.data); // Para depuración
                 setCitas(Array.isArray(response.data.data) ? response.data.data : []);
                 setLoading(false);
             } catch (err) {
-                console.error('Error al cargar las citas:', err);
 
                 if (err.response?.status === 404) {
                     setCitas([]);
