@@ -16,6 +16,7 @@ const EmailModal = ({
     setNombres,
     apellidos,
     setApellidos,
+    handleModalCancel
 }) => {
     return (
         <Modal show={showEmailModal} onHide={() => setShowEmailModal(false)} centered>
@@ -60,7 +61,7 @@ const EmailModal = ({
                     <div className="d-flex justify-content-end">
                         <Button
                             variant="secondary"
-                            onClick={() => setShowEmailModal(false)}
+                            onClick={handleModalCancel}
                             disabled={isSubmitting}
                         >
                             Cancelar

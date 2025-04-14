@@ -244,6 +244,15 @@ const AgendarCita = () => {
         setCurrentStep(currentStep - 1);
     };
 
+    const handleModalCancel = () => {
+        setEmail('');
+        setEmailError('');
+        setEmailTouched(false);
+        setNombres('');
+        setApellidos('');
+        setShowEmailModal(false);
+    };
+
     const handleCancelar = () => {
         setSelectedDate(null);
         setSelectedTime('');
@@ -260,12 +269,13 @@ const AgendarCita = () => {
         setCurrentStep(1);
     };
 
-    const handleConfirmar = async () => {
+    const handleConfirmar = async (isUnloggedUserCaptured = false) => {
         const accessToken = localStorage.getItem('accessToken');
         const isLoggedIn = !!accessToken;
 
-        if (!isLoggedIn && !isUnloggedUserDataCaptured) {
-            setShowEmailModal(true);
+
+        if (!isLoggedIn && !isUnloggedUserCaptured && !isUnloggedUserDataCaptured) {
+            setShowEmailModal(true); 
             return;
         }
 
@@ -310,9 +320,6 @@ const AgendarCita = () => {
             formData.append('files', uploadedFiles[docUuid]);
         });
 
-        for (let pair of formData.entries()) {
-        }
-
         try {
             const response = await axios.post(`${API_URL}/appointments/`, formData, {
                 headers: {
@@ -347,19 +354,17 @@ const AgendarCita = () => {
         const isValid = await validateEmail();
 
         if (isValid) {
-            console.log("Email válido, capturando datos del usuario no logueado...");
-            setIsUnloggedUserDataCaptured(true); 
 
             try {
-                setShowEmailModal(false); 
-                await handleConfirmar(); 
+                setShowEmailModal(false);
+
+                await handleConfirmar(true);
             } catch (error) {
                 console.error("Error al confirmar la cita:", error);
             } finally {
-                setIsSubmitting(false); 
+                setIsSubmitting(false);
             }
         } else {
-            console.log("Email inválido, mostrando errores...");
             setIsSubmitting(false);
         }
     };
@@ -651,7 +656,7 @@ const AgendarCita = () => {
                                     </Button>
                                     <Button
                                         variant="success"
-                                        onClick={handleConfirmar}
+                                        onClick={() => handleConfirmar(false)}
                                     >
                                         Confirmar Cita
                                     </Button>
@@ -692,6 +697,7 @@ const AgendarCita = () => {
                     setNombres={setNombres}
                     apellidos={apellidos}
                     setApellidos={setApellidos}
+                    handleModalCancel={handleModalCancel}
                 />
 
             </div>
