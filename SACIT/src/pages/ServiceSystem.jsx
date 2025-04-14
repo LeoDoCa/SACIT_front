@@ -20,16 +20,8 @@ const ServiceSystem = () => {
     const fetchAppointments = async () => {
       try {
         const userUuid = sessionStorage.getItem('userUuid');
-        if (!userUuid) {
-          console.error('No user UUID found in session');
-          alert('No se encontró el UUID del usuario. Por favor, inicie sesión nuevamente.');
-          return;
-        }
-
-        const token = localStorage.getItem('accessToken');
-        if (!token) {
-          console.error('No access token found in localStorage');
-          alert('No se encontró un token de acceso. Por favor, inicie sesión nuevamente.');
+        if (!userUuid || !token) {
+          console.error('No user UUID or token found in session or localStorage');
           return;
         }
 
@@ -43,7 +35,6 @@ const ServiceSystem = () => {
 
         if (!windowUuid) {
           console.error('No window UUID returned from server');
-          alert('No se pudo obtener la ventanilla asignada. Por favor, contacte al administrador.');
           return;
         }
 
@@ -53,32 +44,27 @@ const ServiceSystem = () => {
           },
         });
 
-        const appointments = appointmentsResponse.data.map((appointment) => ({
-          id: appointment.id,
-          uuid: appointment.uuid,
-          procedureUuid: appointment.procedureUuid,
-          name: `${appointment.userName} ${appointment.userLastName}`,
-          email: appointment.userEmail,
-          time: `${appointment.startTime[0]}:${appointment.startTime[1]} - ${appointment.endTime[0]}:${appointment.endTime[1]}`,
-          procedureName: appointment.procedureName,
-          status: appointment.status,
-          files: [], 
-        }));
+        const appointments = Array.isArray(appointmentsResponse.data)
+          ? appointmentsResponse.data.map((appointment) => ({
+              id: appointment.id,
+              uuid: appointment.uuid,
+              procedureUuid: appointment.procedureUuid,
+              name: `${appointment.userName} ${appointment.userLastName}`,
+              email: appointment.userEmail,
+              time: `${appointment.startTime[0]}:${appointment.startTime[1]} - ${appointment.endTime[0]}:${appointment.endTime[1]}`,
+              procedureName: appointment.procedureName,
+              status: appointment.status,
+              files: [],
+            }))
+          : [];
 
         setServices(appointments);
       } catch (error) {
-        if (error.response) {
-          console.error('Error response:', error.response.data);
-          alert(`Error: ${error.response.data.message || 'No se pudo obtener la información.'}`);
-        } else if (error.request) {
-          console.error('Error request:', error.request);
-          alert('Error de red. Por favor, revise su conexión.');
-        } else {
-          console.error('Error message:', error.message);
-          alert('Ocurrió un error inesperado. Por favor, intente nuevamente.');
-        }
+        console.error('Error fetching appointments:', error.message);
       }
     };
+
+    fetchAppointments();
 
     fetchAppointments();
   }, []);
@@ -170,7 +156,7 @@ const ServiceSystem = () => {
 
       Swal.fire({
         title: '¡Éxito!',
-        text: 'El trámite se finalizó correctamente.',
+        text: 'La cita se atendió correctamente.',
         icon: 'success',
         confirmButtonText: 'OK',
       });
@@ -196,7 +182,7 @@ const ServiceSystem = () => {
   return (
     <div className="service-system-wrapper">
       <UserSideBar />
-      <div className="main-content">
+      <div className="main-content mb-5">
         <Navbar variant="dark" className="mb-4" expand="lg" style={{ backgroundColor: '#1a2942' }}>
           <Container>
             <Navbar.Brand>
@@ -209,16 +195,24 @@ const ServiceSystem = () => {
           <h2 className="text-center my-5">Trámites del día</h2>
 
           <Row className="justify-content-center">
-            {services.map((service) => (
-              <ServiceCard
-                key={service.uuid}
-                name={service.name}
-                time={service.time}
-                procedureName={service.procedureName}
-                status={service.status}
-                onClick={() => handleOpenModal(service)}
-              />
-            ))}
+            {services.length > 0 ? (
+              services.map((service) => (
+                <ServiceCard
+                  key={service.uuid}
+                  name={service.name}
+                  time={service.time}
+                  procedureName={service.procedureName}
+                  status={service.status}
+                  onClick={() => handleOpenModal(service)}
+                />
+              ))
+            ) : (
+              <div className="text-center w-100 py-5">
+                <p className="fs-5 text-muted">
+                  No se encontraron citas para la ventanilla asignada.
+                </p>
+              </div>
+            )}
           </Row>
         </Container>
       </div>
