@@ -244,6 +244,15 @@ const AgendarCita = () => {
         setCurrentStep(currentStep - 1);
     };
 
+    const handleModalCancel = () => {
+        setEmail('');
+        setEmailError('');
+        setEmailTouched(false);
+        setNombres('');
+        setApellidos('');
+        setShowEmailModal(false);
+    };
+
     const handleCancelar = () => {
         setSelectedDate(null);
         setSelectedTime('');
@@ -260,15 +269,22 @@ const AgendarCita = () => {
         setCurrentStep(1);
     };
 
-    const handleConfirmar = async () => {
+    const handleConfirmar = async (isUnloggedUserCaptured = false) => {
         const accessToken = localStorage.getItem('accessToken');
         const isLoggedIn = !!accessToken;
 
-        if (!isLoggedIn && !isUnloggedUserDataCaptured) {
-            setShowEmailModal(true);
+        console.log("isLoggedIn:", isLoggedIn);
+        console.log("isUnloggedUserCaptured:", isUnloggedUserCaptured);
+        console.log("isUnloggedUserDataCaptured:", isUnloggedUserDataCaptured);
+
+        // Si el usuario no está logueado y los datos no han sido capturados, muestra el modal
+        if (!isLoggedIn && !isUnloggedUserCaptured && !isUnloggedUserDataCaptured) {
+            console.log("Usuario no logueado, mostrando modal para capturar datos...");
+            setShowEmailModal(true); // Abre el modal
             return;
         }
 
+        // Si el usuario está logueado o los datos ya están capturados, continúa con la lógica
         const formData = new FormData();
 
         const appointment = {
@@ -310,9 +326,6 @@ const AgendarCita = () => {
             formData.append('files', uploadedFiles[docUuid]);
         });
 
-        for (let pair of formData.entries()) {
-        }
-
         try {
             const response = await axios.post(`${API_URL}/appointments/`, formData, {
                 headers: {
@@ -348,15 +361,17 @@ const AgendarCita = () => {
 
         if (isValid) {
             console.log("Email válido, capturando datos del usuario no logueado...");
-            setIsUnloggedUserDataCaptured(true); 
 
             try {
-                setShowEmailModal(false); 
-                await handleConfirmar(); 
+                // Cierra el modal antes de proceder
+                setShowEmailModal(false);
+
+                // Llama directamente a handleConfirmar con los datos capturados
+                await handleConfirmar(true); // Pasa true para indicar que los datos ya están capturados
             } catch (error) {
                 console.error("Error al confirmar la cita:", error);
             } finally {
-                setIsSubmitting(false); 
+                setIsSubmitting(false); // Restablece el estado de envío
             }
         } else {
             console.log("Email inválido, mostrando errores...");
@@ -651,7 +666,7 @@ const AgendarCita = () => {
                                     </Button>
                                     <Button
                                         variant="success"
-                                        onClick={handleConfirmar}
+                                        onClick={() => handleConfirmar(false)}
                                     >
                                         Confirmar Cita
                                     </Button>
@@ -692,6 +707,7 @@ const AgendarCita = () => {
                     setNombres={setNombres}
                     apellidos={apellidos}
                     setApellidos={setApellidos}
+                    handleModalCancel={handleModalCancel}
                 />
 
             </div>
