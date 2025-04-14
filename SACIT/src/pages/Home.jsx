@@ -30,7 +30,7 @@ const Home = () => {
         const procedures = response.data?.data || [];
 
         const mappedProcedures = procedures.map((procedure) => ({
-          id: procedure.id,
+          uuid: procedure.uuid,
           title: procedure.name,
           subtitle: procedure.description,
           price: `$${procedure.cost} MXN`,
@@ -61,17 +61,33 @@ const Home = () => {
 
   return (
     <>
-      <section id="start" className="hero-section text-center py-5" style={{
-        background: "linear-gradient(135deg, #1e2a3a 0%,rgb(37, 73, 137) 100%)",
-        color: "white",
-        padding: "60px 0",
-        borderRadius: "0 0 20px 20px",
-        boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-        marginBottom: "20px"
-      }}>
+      <section
+        id="start"
+        className="hero-section text-center py-5"
+        style={{
+          background: "linear-gradient(135deg, #1e2a3a 0%,rgb(37, 73, 137) 100%)",
+          color: "white",
+          padding: "60px 0",
+          borderRadius: "0 0 20px 20px",
+          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
+          marginBottom: "20px",
+        }}
+      >
         <Container>
-          <h1 className="display-4 fw-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>Bienvenido a SACIT</h1>
-          <p className="lead fs-4 mt-3" style={{ maxWidth: "700px", margin: "0 auto", fontFamily: "'Roboto', sans-serif" }}>
+          <h1
+            className="display-4 fw-bold"
+            style={{ fontFamily: "'Montserrat', sans-serif" }}
+          >
+            Bienvenido a SACIT
+          </h1>
+          <p
+            className="lead fs-4 mt-3"
+            style={{
+              maxWidth: "700px",
+              margin: "0 auto",
+              fontFamily: "'Roboto', sans-serif",
+            }}
+          >
             Gestiona tus trámites de forma rápida, sencilla y segura.
           </p>
           <button
@@ -79,7 +95,7 @@ const Home = () => {
             style={{
               boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
               fontWeight: "600",
-              transition: "all 0.3s ease"
+              transition: "all 0.3s ease",
             }}
             onClick={() => {
               const servicesSection = document.getElementById("services-section");
@@ -95,17 +111,40 @@ const Home = () => {
 
       <Container id="services-section" className="py-5">
         <div className="services-header text-center mb-5">
-          <h2 className="fw-bold" style={{ fontFamily: "'Montserrat', sans-serif", color: "#1e3c72" }}>Nuestros Servicios</h2>
-          <p className="text-muted" style={{ maxWidth: "700px", margin: "0 auto" }}>Explora nuestra amplia gama de servicios diseñados para facilitar tus trámites</p>
+          <h2
+            className="fw-bold"
+            style={{
+              fontFamily: "'Montserrat', sans-serif",
+              color: "#1e3c72",
+            }}
+          >
+            Nuestros Servicios
+          </h2>
+          <p
+            className="text-muted"
+            style={{ maxWidth: "700px", margin: "0 auto" }}
+          >
+            Explora nuestra amplia gama de servicios diseñados para facilitar
+            tus trámites
+          </p>
         </div>
 
-        <div className="search-container mb-5" style={{ maxWidth: "600px", margin: "0 auto" }}>
-          <div className="input-group" style={{
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-            borderRadius: "50px",
-            overflow: "hidden"
-          }}>
-            <span className="input-group-text bg-white border-0" style={{ borderRadius: "50px 0 0 50px" }}>
+        <div
+          className="search-container mb-5"
+          style={{ maxWidth: "600px", margin: "0 auto" }}
+        >
+          <div
+            className="input-group"
+            style={{
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+              borderRadius: "50px",
+              overflow: "hidden",
+            }}
+          >
+            <span
+              className="input-group-text bg-white border-0"
+              style={{ borderRadius: "50px 0 0 50px" }}
+            >
               <Search size={20} color="#6c757d" />
             </span>
             <input
@@ -118,7 +157,7 @@ const Home = () => {
               style={{
                 fontSize: "16px",
                 fontFamily: "'Roboto', sans-serif",
-                borderRadius: "0 50px 50px 0"
+                borderRadius: "0 50px 50px 0",
               }}
             />
           </div>
@@ -136,88 +175,28 @@ const Home = () => {
           <Row className="g-4">
             {filteredCards.length > 0 ? (
               filteredCards.map((card) => (
-                <Col key={card.id} xs={12} sm={6} md={4} lg={3}>
+                <Col key={card.uuid} xs={12} sm={6} md={4} lg={3}>
                   <UserCard
                     title={card.title}
                     subtitle={card.subtitle}
                     price={card.price}
                     requirements={card.requirements}
-                    showRequirements={!!visibleRequirements[card.id]}
-                    toggleRequirements={() => toggleRequirements(card.id)}
+                    showRequirements={!!visibleRequirements[card.uuid]}
+                    toggleRequirements={() => toggleRequirements(card.uuid)}
+                    uuid={card.uuid} 
                   />
                 </Col>
               ))
             ) : (
               <div className="text-center w-100 py-5">
-                <p className="fs-5 text-muted">No se encontraron servicios que coincidan con tu búsqueda</p>
+                <p className="fs-5 text-muted">
+                  No se encontraron servicios que coincidan con tu búsqueda
+                </p>
               </div>
             )}
           </Row>
         )}
       </Container>
-
-      <footer style={{
-        background: "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)",
-        color: "white",
-        borderRadius: "20px 20px 0 0",
-        marginTop: "30px",
-        padding: "40px 0 20px"
-      }}>
-        <Container>
-          <Row>
-            <Col md={4} className="mb-4">
-              <h5 className="fw-bold mb-3">SACIT</h5>
-              <p>Tu plataforma integral para la gestión de trámites gubernamentales.</p>
-            </Col>
-            <Col md={4} className="mb-4">
-              <h5 className="fw-bold mb-3">Enlaces rápidos</h5>
-              <ul className="list-unstyled">
-                <li className="mb-2">
-                  <button
-                    onClick={() => {
-                      const startSection = document.getElementById("start");
-                      startSection.scrollIntoView({ behavior: "smooth" });
-                    }}
-                    className="text-white text-decoration-none btn btn-link"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      padding: '0',
-                      textAlign: 'left'
-                    }}
-                  >
-                    Inicio
-                  </button>
-                </li>
-                <li className="mb-2">
-                  <button
-                    onClick={() => {
-                      const servicesSection = document.getElementById("services-section");
-                      servicesSection.scrollIntoView({ behavior: "smooth" });
-                    }}
-                    className="text-white text-decoration-none btn btn-link"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      padding: '0',
-                      textAlign: 'left'
-                    }}
-                  >
-                    Servicios
-                  </button>
-                </li>
-              </ul>
-            </Col>
-            <Col md={4} className="mb-4">
-              <h5 className="fw-bold mb-3">Contacto</h5>
-              <p className="mb-1">Email: sacit3mail@gmail.com</p>
-              <p className="mb-1">Teléfono: (+52) 7771234567</p>
-            </Col>
-          </Row>
-          <hr className="my-4" style={{ opacity: "0.2" }} />
-          <p className="text-center mb-0">© 2025 SACIT. Todos los derechos reservados.</p>
-        </Container>
-      </footer>
     </>
   );
 };

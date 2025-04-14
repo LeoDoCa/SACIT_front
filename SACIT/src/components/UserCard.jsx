@@ -1,10 +1,10 @@
 import React from 'react';
-import { Card, Button, Nav } from 'react-bootstrap';
+import { Card, Button } from 'react-bootstrap';
 import { FaFileAlt, FaChevronDown, FaChevronUp, FaCheck } from 'react-icons/fa';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 
-function UserCard({ title, subtitle, price, requirements, showRequirements, toggleRequirements }) {
+function UserCard({ title, subtitle, price, requirements, showRequirements, toggleRequirements, uuid }) {
   const navigate = useNavigate();
 
   return (
@@ -53,12 +53,13 @@ function UserCard({ title, subtitle, price, requirements, showRequirements, togg
             </div>
           )}
 
-          <Nav.Link onClick={() => navigate('/schedule')} className="btn btn-primary w-100 rounded-pill text-center">
-            <Button variant="primary" className="w-100 rounded-pill">
-              Agendar
-            </Button>
-          </Nav.Link>
-
+          <Button
+            variant="primary"
+            className="w-100 rounded-pill"
+            onClick={() => navigate('/schedule', { state: { uuid } })}
+          >
+            Agendar
+          </Button>
         </div>
       </Card.Body>
     </Card>
@@ -72,6 +73,7 @@ UserCard.propTypes = {
   requirements: PropTypes.arrayOf(PropTypes.string).isRequired,
   showRequirements: PropTypes.bool.isRequired,
   toggleRequirements: PropTypes.func.isRequired,
+  uuid: PropTypes.string.isRequired,
 };
 
 export default UserCard;
