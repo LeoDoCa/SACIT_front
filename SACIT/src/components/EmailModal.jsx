@@ -19,8 +19,12 @@ const EmailModal = ({
     handleModalCancel
 }) => {
     return (
-        <Modal show={showEmailModal} onHide={() => setShowEmailModal(false)} centered>
-            <Modal.Header closeButton>
+        <Modal show={showEmailModal} onHide={() => {
+            if (!isSubmitting) {
+                setShowEmailModal(false);
+            }
+        }} backdrop={isSubmitting ? "static" : true} keyboard={!isSubmitting} centered>
+            <Modal.Header closeButton={!isSubmitting}>
                 <Modal.Title>Confirmar Datos</Modal.Title>
             </Modal.Header>
             <Modal.Body>
@@ -74,6 +78,26 @@ const EmailModal = ({
                         >
                             Confirmar
                         </Button>
+                        {isSubmitting && (
+                            <div 
+                                style={{
+                                    position: 'fixed',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    backgroundColor: 'rgba(0,0,0,0.3)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    zIndex: 9999
+                                }}
+                            >
+                                <div className="spinner-border text-primary" role="status">
+                                    <span className="visually-hidden">Procesando...</span>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </Form>
             </Modal.Body>

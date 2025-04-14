@@ -132,7 +132,7 @@ const AddProcedure = () => {
 
         const response = await axios.post(apiUrl, submissionData, config);
 
-        console.log('Trámite guardado:', response.data);
+        console.log('Trámite guardado.');
 
         Swal.fire({
           title: '¡Éxito!',
@@ -152,7 +152,7 @@ const AddProcedure = () => {
           requiredDocumentsNames: [''],
         });
       } catch (error) {
-        console.error('Error al guardar trámite:', error);
+        console.error('Error al guardar trámite.');
 
         Swal.fire({
           title: '¡Error!',

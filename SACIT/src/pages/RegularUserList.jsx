@@ -119,7 +119,7 @@ const RegularUsersList = () => {
                 setSelectedUser(null);
                 fetchRegularUsers();
             } catch (error) {
-                console.error('Error updating user:', error);
+                console.error('Error updating user.');
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -204,7 +204,7 @@ const RegularUsersList = () => {
                 fetchRegularUsers();
             }
         } catch (error) {
-            console.error('Error deleting user:', error);
+            console.error('Error deleting user.');
             Swal.fire({
                 icon: 'error',
                 title: 'Error',

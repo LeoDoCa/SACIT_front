@@ -116,7 +116,7 @@ const AdminUsersList = () => {
                 setSelectedUser(null);
                 fetchAdminUsers();
             } catch (error) {
-                console.error('Error updating admin:', error);
+                console.error('Error updating admin.');
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -198,7 +198,7 @@ const AdminUsersList = () => {
                 fetchAdminUsers();
             }
         } catch (error) {
-            console.error('Error deleting admin:', error);
+            console.error('Error deleting admin');
             Swal.fire({
                 icon: 'error',
                 title: 'Error',

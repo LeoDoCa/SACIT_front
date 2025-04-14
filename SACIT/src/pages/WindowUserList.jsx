@@ -71,7 +71,7 @@ const WindowUsersList = () => {
 
             setWindowUsers(windowOnlyUsers);
         } catch (error) {
-            console.error('Error fetching window users:', error);
+            console.error('Error fetching window users.');
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -104,7 +104,7 @@ const WindowUsersList = () => {
 
             fetchWindowUsers();
         } catch (error) {
-            console.error('Error al asignar ventanilla:', error);
+            console.error('Error al asignar ventanilla.');
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -116,7 +116,7 @@ const WindowUsersList = () => {
     const handleEditar = (uuid) => {
         const user = windowUsers.find((u) => u.uuid === uuid);
         if (!user) {
-            console.error('Usuario no encontrado:', uuid);
+            console.error('Usuario no encontrado.');
             return;
         }
 
@@ -161,7 +161,7 @@ const WindowUsersList = () => {
                 setSelectedUser(null);
                 fetchWindowUsers();
             } catch (error) {
-                console.error('Error updating window user:', error);
+                console.error('Error updating window user.');
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -226,7 +226,7 @@ const WindowUsersList = () => {
                 fetchWindowUsers();
             }
         } catch (error) {
-            console.error('Error deleting user:', error);
+            console.error('Error deleting user.');
             Swal.fire({
                 icon: 'error',
                 title: 'Error',

@@ -56,7 +56,7 @@ function UserCard({ title, subtitle, price, requirements, showRequirements, togg
           <Button
             variant="primary"
             className="w-100 rounded-pill"
-            onClick={() => navigate('/schedule', { state: { uuid } })}
+            onClick={() => navigate('/schedule', { state: { uuid, title } })}
           >
             Agendar
           </Button>

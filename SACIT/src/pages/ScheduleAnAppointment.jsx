@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Row, Col, Card, Button, Form, ProgressBar, Modal } from 'react-bootstrap';
 import FullCalendar from '@fullcalendar/react';
@@ -16,7 +16,9 @@ import axios from 'axios';
 const AgendarCita = () => {
     const location = useLocation();
     const tramiteUuid = location.state?.uuid;
+    const tramiteName = location.state?.title;
     const API_URL = import.meta.env.VITE_SERVER_URL;
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchTramiteData = async () => {
@@ -30,7 +32,7 @@ const AgendarCita = () => {
                 }
                 setError(null);
             } catch (err) {
-                console.error("Error al obtener los datos del trámite:", err);
+                console.error("Error al obtener los datos del trámite.");
                 setError("No se pudieron cargar los datos del trámite. Intente de nuevo más tarde.");
             } finally {
                 setLoading(false);
@@ -40,7 +42,7 @@ const AgendarCita = () => {
         if (tramiteUuid) {
             fetchTramiteData();
         }
-    }, [tramiteUuid, API_URL]);
+    }, [tramiteUuid, tramiteName, API_URL]);
 
     const calendarRef = useRef(null);
 
@@ -49,6 +51,7 @@ const AgendarCita = () => {
     const [availableTimes, setAvailableTimes] = useState([]);
     const [identificacion, setIdentificacion] = useState(null);
     const [recetaMedica, setRecetaMedica] = useState(null);
+    const [isProcessingConfirmation, setIsProcessingConfirmation] = useState(false);
 
     const [requiredDocuments, setRequiredDocuments] = useState([]);
     const [uploadedFiles, setUploadedFiles] = useState({});
@@ -157,7 +160,7 @@ const AgendarCita = () => {
             setEmailError('');
             return true;
         } catch (err) {
-            console.error("validateEmail: error de validación:", err.message);
+            console.error("validateEmail: error de validación.");
             setEmailError(err.message);
             return false;
         }
@@ -203,13 +206,28 @@ const AgendarCita = () => {
             });
 
 
-            const times = response.data.data.availableTimes || [];
+            let times = response.data.data.availableTimes || [];
+
+            const isToday = info.dateStr === new Date().toISOString().split('T')[0];
+        
+            if (isToday) {
+                const currentHour = new Date();
+                times = times.filter(time => {
+                    const [hours, minutes] = time.split(':');
+                    const timeToCompare = new Date();
+                    timeToCompare.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+                    
+                    const marginTime = new Date(currentHour);
+                    marginTime.setMinutes(currentHour.getMinutes() + 15);
+                    
+                    return timeToCompare > marginTime;
+                });
+            }
 
             setAvailableTimes(times);
-
             setSelectedTime('');
         } catch (error) {
-            console.error("Error al obtener los horarios disponibles:", error);
+            console.error("Error al obtener los horarios disponibles");
             Swal.fire({
                 title: 'Error',
                 text: 'No se pudieron cargar los horarios disponibles. Intente de nuevo más tarde.',
@@ -237,10 +255,20 @@ const AgendarCita = () => {
     };
 
     const handleBack = () => {
+        if (currentStep === 3) {
+            setUploadedFiles({});
+            
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            fileInputs.forEach(input => {
+                input.value = '';
+            });
+        }
+        
         if (currentStep === 2) {
             setIdentificacion(null);
             setRecetaMedica(null);
         }
+        
         setCurrentStep(currentStep - 1);
     };
 
@@ -273,9 +301,11 @@ const AgendarCita = () => {
         const accessToken = localStorage.getItem('accessToken');
         const isLoggedIn = !!accessToken;
 
+        setIsProcessingConfirmation(true);
 
         if (!isLoggedIn && !isUnloggedUserCaptured && !isUnloggedUserDataCaptured) {
             setShowEmailModal(true); 
+            setIsProcessingConfirmation(false);
             return;
         }
 
@@ -305,6 +335,7 @@ const AgendarCita = () => {
                     icon: 'error',
                     confirmButtonText: 'Aceptar',
                 });
+                setIsProcessingConfirmation(false);
                 return;
             }
             formData.append('userUuid', userUuid);
@@ -326,46 +357,52 @@ const AgendarCita = () => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-
+            navigate('/');
             Swal.fire({
                 title: '¡Éxito!',
                 text: `Cita agendada con éxito para el ${formatDate(selectedDate)} a las ${selectedTime}`,
                 icon: 'success',
                 confirmButtonText: 'Aceptar',
+            }).then(() => {
+                setIsProcessingConfirmation(false);
+                handleCancelar();
             });
 
             handleCancelar();
         } catch (error) {
-            console.error("Error al agendar la cita:", error);
+            console.error("Error al agendar la cita.");
             Swal.fire({
                 title: 'Error',
-                text: error.response?.data?.Mensaje || 'Hubo un problema al agendar la cita. Por favor, inténtalo de nuevo más tarde.',
+                text: error.response?.data?.message || 'Hubo un problema al agendar la cita. Por favor, inténtalo de nuevo más tarde.',
                 icon: 'error',
                 confirmButtonText: 'Aceptar',
             });
-        }
+            setIsProcessingConfirmation(false);
+        } 
     };
 
     const handleEmailSubmit = async (e) => {
         e.preventDefault();
 
         setIsSubmitting(true);
+        setIsProcessingConfirmation(true);
 
         const isValid = await validateEmail();
 
         if (isValid) {
 
             try {
-                setShowEmailModal(false);
-
                 await handleConfirmar(true);
             } catch (error) {
-                console.error("Error al confirmar la cita:", error);
+                console.error("Error al confirmar la cita");
+                setIsProcessingConfirmation(false);
             } finally {
+                setShowEmailModal(false);
                 setIsSubmitting(false);
             }
         } else {
             setIsSubmitting(false);
+            setIsProcessingConfirmation(false);
         }
     };
 
@@ -555,10 +592,37 @@ const AgendarCita = () => {
                                     {requiredDocuments.map((doc) => (
                                         <Form.Group className="mb-4" key={doc.uuid}>
                                             <Form.Label><strong>{doc.name}:</strong></Form.Label>
-                                            <Form.Control
-                                                type="file"
-                                                onChange={(e) => handleFileChange(e, doc.uuid)}
-                                            />
+                                            <div className="input-group">
+                                                <input 
+                                                    type="text" 
+                                                    className="form-control" 
+                                                    placeholder="Sin archivos seleccionados" 
+                                                    value={uploadedFiles[doc.uuid]?.name || ""} 
+                                                    readOnly
+                                                    style={{
+                                                    backgroundColor: "#f8f9fa",
+                                                    cursor: "default"
+                                                    }}
+                                                />
+                                                <label className="input-group-text" style={{ 
+                                                    cursor: "pointer",
+                                                    width: "150px",   
+                                                    display: "flex",   
+                                                    justifyContent: "center", 
+                                                    alignItems: "center",    
+                                                    padding: "0.375rem 0",  
+                                                    backgroundColor:"#e0e0e0", 
+                                                    borderColor:"#d6d6d6"
+                                                }}>
+                                                    Examinar
+                                                    <input
+                                                    type="file"
+                                                    className="d-none"
+                                                    onChange={(e) => handleFileChange(e, doc.uuid)}
+                                                    accept=".pdf"
+                                                    />
+                                                </label>
+                                            </div>
                                             <Form.Text className="text-muted">
                                                 Sube tu archivo oficial en formato PDF (máximo 0.5 MB).
                                             </Form.Text>
@@ -572,7 +636,7 @@ const AgendarCita = () => {
                                     <div className="d-flex justify-content-between mt-4">
                                         <Button
                                             variant="outline-secondary"
-                                            onClick={() => setCurrentStep(currentStep - 1)}
+                                            onClick={handleBack}
                                         >
                                             Atrás
                                         </Button>
@@ -620,7 +684,10 @@ const AgendarCita = () => {
                             <h4 className="mb-4">Confirmación de Cita</h4>
 
                             <div className="mb-4">
-                                <h5>Detalles de la Cita</h5>
+                                <h5 className='mb-2'>Detalles de la Cita</h5>
+                                <p className="mb-2">
+                                    <strong>Trámite:</strong> {tramiteName}
+                                </p>
                                 <p className="mb-2">
                                     <strong>Fecha:</strong> {formatDate(selectedDate)}
                                 </p>
@@ -630,7 +697,7 @@ const AgendarCita = () => {
                             </div>
 
                             <div className="mb-4">
-                                <h5>Documentos Subidos</h5>
+                                <h5 className='mb-2'>Documentos Subidos</h5>
                                 {requiredDocuments.map((doc) => (
                                     <p key={doc.uuid} className="mb-2">
                                         <strong>{doc.name}:</strong>{' '}
@@ -643,6 +710,7 @@ const AgendarCita = () => {
                                 <Button
                                     variant="outline-secondary"
                                     onClick={handleBack}
+                                    disabled={isProcessingConfirmation}
                                 >
                                     Atrás
                                 </Button>
@@ -651,15 +719,37 @@ const AgendarCita = () => {
                                         variant="secondary"
                                         className="me-2"
                                         onClick={handleCancelar}
+                                        disabled={isProcessingConfirmation}
                                     >
                                         Cancelar
                                     </Button>
                                     <Button
                                         variant="success"
                                         onClick={() => handleConfirmar(false)}
+                                        disabled={isProcessingConfirmation}
                                     >
-                                        Confirmar Cita
+                                        {isProcessingConfirmation ? 'Procesando...' : 'Confirmar Cita'}
                                     </Button>
+                                    {isProcessingConfirmation && (
+                                        <div 
+                                            style={{
+                                                position: 'fixed',
+                                                top: 0,
+                                                left: 0,
+                                                right: 0,
+                                                bottom: 0,
+                                                backgroundColor: 'rgba(0,0,0,0.3)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                zIndex: 9999
+                                            }}
+                                        >
+                                            <div className="spinner-border text-primary" role="status">
+                                                <span className="visually-hidden">Procesando...</span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </Card.Body>
