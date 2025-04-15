@@ -53,8 +53,10 @@ const EmailModal = ({
                 <Formik
                     initialValues={initialValues}
                     validationSchema={validationSchema}
+                    validateOnMount={true}
+                    validateOnChange={true}
+                    validateOnBlur={true}
                     onSubmit={(values, { setSubmitting }) => {
-                        setSubmitting(true);
                         handleEmailSubmit(values);
                         setSubmitting(false);
                     }}
@@ -131,26 +133,6 @@ const EmailModal = ({
                                 >
                                     Confirmar
                                 </Button>
-                                {isSubmitting && (
-                                    <div
-                                        style={{
-                                            position: 'fixed',
-                                            top: 0,
-                                            left: 0,
-                                            right: 0,
-                                            bottom: 0,
-                                            backgroundColor: 'rgba(0,0,0,0.3)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            zIndex: 9999,
-                                        }}
-                                    >
-                                        <div className="spinner-border text-primary" role="status">
-                                            <span className="visually-hidden">Procesando...</span>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         </Form>
                     )}
