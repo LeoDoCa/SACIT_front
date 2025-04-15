@@ -209,17 +209,17 @@ const AgendarCita = () => {
             let times = response.data.data.availableTimes || [];
 
             const isToday = info.dateStr === new Date().toISOString().split('T')[0];
-        
+
             if (isToday) {
                 const currentHour = new Date();
                 times = times.filter(time => {
                     const [hours, minutes] = time.split(':');
                     const timeToCompare = new Date();
                     timeToCompare.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
-                    
+
                     const marginTime = new Date(currentHour);
                     marginTime.setMinutes(currentHour.getMinutes() + 15);
-                    
+
                     return timeToCompare > marginTime;
                 });
             }
@@ -267,18 +267,18 @@ const AgendarCita = () => {
     const handleBack = () => {
         if (currentStep === 3) {
             setUploadedFiles({});
-            
+
             const fileInputs = document.querySelectorAll('input[type="file"]');
             fileInputs.forEach(input => {
                 input.value = '';
             });
         }
-        
+
         if (currentStep === 2) {
             setIdentificacion(null);
             setRecetaMedica(null);
         }
-        
+
         setCurrentStep(currentStep - 1);
     };
 
@@ -314,7 +314,7 @@ const AgendarCita = () => {
         setIsProcessingConfirmation(true);
 
         if (!isLoggedIn && !isUnloggedUserCaptured && !isUnloggedUserDataCaptured) {
-            setShowEmailModal(true); 
+            setShowEmailModal(true);
             setIsProcessingConfirmation(false);
             return;
         }
@@ -388,29 +388,26 @@ const AgendarCita = () => {
                 confirmButtonText: 'Aceptar',
             });
             setIsProcessingConfirmation(false);
-        } 
+        }
     };
 
-    const handleEmailSubmit = async (e) => {
-        e.preventDefault();
-
+    const handleEmailSubmit = async (values) => {
         setIsSubmitting(true);
         setIsProcessingConfirmation(true);
 
-        const isValid = await validateEmail();
+        try {
+            await emailSchema.validate({ email: values.email });
+            setEmailError('');
+            setNombres(values.nombres);
+            setApellidos(values.apellidos);
+            setEmail(values.email);
 
-        if (isValid) {
-
-            try {
-                await handleConfirmar(true);
-            } catch (error) {
-                console.error("Error al confirmar la cita");
-                setIsProcessingConfirmation(false);
-            } finally {
-                setShowEmailModal(false);
-                setIsSubmitting(false);
-            }
-        } else {
+            await handleConfirmar(true);
+        } catch (err) {
+            console.error("Error al confirmar la cita:", err);
+            setEmailError(err.message);
+        } finally {
+            setShowEmailModal(false);
             setIsSubmitting(false);
             setIsProcessingConfirmation(false);
         }
@@ -603,33 +600,33 @@ const AgendarCita = () => {
                                         <Form.Group className="mb-4" key={doc.uuid}>
                                             <Form.Label><strong>{doc.name}:</strong></Form.Label>
                                             <div className="input-group">
-                                                <input 
-                                                    type="text" 
-                                                    className="form-control" 
-                                                    placeholder="Sin archivos seleccionados" 
-                                                    value={uploadedFiles[doc.uuid]?.name || ""} 
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="Sin archivos seleccionados"
+                                                    value={uploadedFiles[doc.uuid]?.name || ""}
                                                     readOnly
                                                     style={{
-                                                    backgroundColor: "#f8f9fa",
-                                                    cursor: "default"
+                                                        backgroundColor: "#f8f9fa",
+                                                        cursor: "default"
                                                     }}
                                                 />
-                                                <label className="input-group-text" style={{ 
+                                                <label className="input-group-text" style={{
                                                     cursor: "pointer",
-                                                    width: "150px",   
-                                                    display: "flex",   
-                                                    justifyContent: "center", 
-                                                    alignItems: "center",    
-                                                    padding: "0.375rem 0",  
-                                                    backgroundColor:"#e0e0e0", 
-                                                    borderColor:"#d6d6d6"
+                                                    width: "150px",
+                                                    display: "flex",
+                                                    justifyContent: "center",
+                                                    alignItems: "center",
+                                                    padding: "0.375rem 0",
+                                                    backgroundColor: "#e0e0e0",
+                                                    borderColor: "#d6d6d6"
                                                 }}>
                                                     Examinar
                                                     <input
-                                                    type="file"
-                                                    className="d-none"
-                                                    onChange={(e) => handleFileChange(e, doc.uuid)}
-                                                    accept=".pdf"
+                                                        type="file"
+                                                        className="d-none"
+                                                        onChange={(e) => handleFileChange(e, doc.uuid)}
+                                                        accept=".pdf"
                                                     />
                                                 </label>
                                             </div>
@@ -741,7 +738,7 @@ const AgendarCita = () => {
                                         {isProcessingConfirmation ? 'Procesando...' : 'Confirmar Cita'}
                                     </Button>
                                     {isProcessingConfirmation && (
-                                        <div 
+                                        <div
                                             style={{
                                                 position: 'fixed',
                                                 top: 0,
