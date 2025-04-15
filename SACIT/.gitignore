@@ -11,6 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
+.env*
+
+# Coverage y análisis
+.scannerwork/
+coverage/
 
 # Editor directories and files
 .vscode/*
